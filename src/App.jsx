@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import Footer from './components/Footer.jsx'
+import Header from './components/Header.jsx'
+import Cart from './components/Cart.jsx'
 import './App.css'
 
 function App() {
@@ -9,7 +9,7 @@ function App() {
 
   return (
     <>
-    <Footer />
+  <Cart/>
     </>
   )
 }

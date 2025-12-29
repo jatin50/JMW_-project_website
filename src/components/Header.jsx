@@ -13,15 +13,17 @@ const Header = () => {
         <h2 className="text-white text-xl font-medium">
           Super Deal! Free Shipping on Orders Over ₹999
         </h2>
-        <div className=" relative left-90 text-black bg-white rounded-2xl w-24 h-8 flex items-center justify-center"> Login/Signup </div>
+        <div className=" relative left-90 text-black bg-white rounded-2xl w-24 h-8 flex items-center justify-center">
+          {" "}
+          Login/Signup{" "}
+        </div>
       </div>
       <div className=" bg-[#D9D9D9] h-20 flex justify-between items-baseline-last px-20">
         <div className="bold m-2 px-2 text-2xl text-black relative left-3">
           JATIN MENS WEAR
         </div>
         <div className="relative bottom-0 gap-5 px-2 flex left-30">
-          <button onClick={() =>
-             setOpen1(!Open1)} className="text-black">
+          <button onClick={() => setOpen1(!Open1)} className="text-black">
             TopWears ▼
           </button>
 
@@ -103,9 +105,7 @@ const Header = () => {
 
           {Open3 && (
             <div className="absolute right-20 top-7 mt-2 w-40 bg-white shadow-lg rounded">
-              <a className="block px-4 py-2 hover:bg-gray-100">
-                Plain Hoodie
-              </a>
+              <a className="block px-4 py-2 hover:bg-gray-100">Plain Hoodie</a>
               <a className="block px-4 py-2 hover:bg-gray-100">
                 Printed Hoodie
               </a>
@@ -113,10 +113,10 @@ const Header = () => {
                 Plain Sweatshirts
               </a>
               <a className="block px-4 py-2 hover:bg-gray-100">
-               Anime Style Hoodies
+                Anime Style Hoodies
               </a>
               <a className="block px-4 py-2 hover:bg-gray-100">
-               Oversized Sweatshirts
+                Oversized Sweatshirts
               </a>
               <a className="block px-4 py-2 hover:bg-gray-100">
                 Winter Jackets
@@ -127,17 +127,13 @@ const Header = () => {
             New Arrivals ▼
           </button>
 
-          {Open4   && (
+          {Open4 && (
             <div className="absolute right-0 top-7 mt-2 w-40 bg-white shadow-lg rounded">
               <a className="block px-4 py-2 hover:bg-gray-100">
                 Checked Shirts
               </a>
-              <a className="block px-4 py-2 hover:bg-gray-100">
-                Denim Jeans
-              </a>
-              <a className="block px-4 py-2 hover:bg-gray-100">
-                Cargo Pants
-              </a>
+              <a className="block px-4 py-2 hover:bg-gray-100">Denim Jeans</a>
+              <a className="block px-4 py-2 hover:bg-gray-100">Cargo Pants</a>
               <a className="block px-4 py-2 hover:bg-gray-100">
                 Prada Half Sleeve Shirt
               </a>
@@ -147,7 +143,12 @@ const Header = () => {
             </div>
           )}
         </div>
-        <div className="relative right-10 bottom-10 w-10 h-8 rounded-2xl bg-white flex justify-center items-center"> cart</div>
+        <div className="relative right-10 bottom-10 w-10 h-8 rounded-2xl bg-white flex justify-center items-center">
+          {" "}
+          {/* <NavLink to="/src/components/Cart.jsx"> */}
+            cart
+          {/* </NavLink> */}
+        </div>
       </div>
     </>
   );
