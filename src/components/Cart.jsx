@@ -94,7 +94,7 @@ const Cart = () => {
               </select>
             </div>
             <div className="bg-white sticky mt-5 mr-8 flex items-center justify-center outline-1 w-16 h-8 rounded-2xl">
-              D
+              🗑️
             </div>
           </div>
           <div className="w-11/12 h-60 outline-1 flex rounded-2xl shadow-2xl my-4 mr-2 ml-2">
@@ -148,7 +148,7 @@ const Cart = () => {
               </select>
             </div>
             <div className="bg-white sticky mt-5 mr-8 flex items-center justify-center outline-1 w-16 h-8 rounded-2xl">
-              D
+              🗑️
             </div>
           </div>
         </div>
