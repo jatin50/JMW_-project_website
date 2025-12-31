@@ -25,13 +25,21 @@ const Address = () => {
           Cart
         </div>
         <div className="font-medium text-xl p-2 ">..................</div>
-        <div className="font-medium text-xl p-2"> <span class="inline-flex items-center justify-center w-5 h-5 rounded-full mx-1  text-black text-sm">
+        <div className="font-medium text-xl p-2">
+          {" "}
+          <span class="inline-flex items-center justify-center w-5 h-5 rounded-full mx-1  text-black text-sm">
             ✓
-          </span>Address</div>
+          </span>
+          Address
+        </div>
         <div className="font-medium text-xl p-2 ">..................</div>
-        <div className="font-medium text-xl p-2 relative right-4"> <span class="inline-flex items-center justify-center w-5 h-5 rounded-full mx-1  text-black text-sm">
+        <div className="font-medium text-xl p-2 relative right-4">
+          {" "}
+          <span class="inline-flex items-center justify-center w-5 h-5 rounded-full mx-1  text-black text-sm">
             ✓
-          </span>Payment</div>
+          </span>
+          Payment
+        </div>
       </div>
 
       <div className=" flex items-center gap-5 justify-between">

@@ -17,11 +17,28 @@ const Cart = () => {
         </div>
       </div>
       <div className="bg-[#FDEA22] h-12 w-xl rounded-4xl shadow-xl relative left-85 top-8  flex justify-between items-center p-2">
-        <div className="font-medium text-xl p-2 relative left-4 ">Cart</div>
+        <div className="font-medium text-xl p-2 relative left-4 ">
+          {" "}
+          <span class="inline-flex items-center justify-center w-5 h-5 rounded-full mx-1  text-black text-sm">
+            ✓
+          </span>
+          Cart
+        </div>
         <div className="font-medium text-xl p-2 ">..................</div>
-        <div className="font-medium text-xl p-2">Address</div>
+        <div className="font-medium text-xl p-2">
+          {" "}
+          <span class="inline-flex items-center justify-center w-5 h-5 rounded-full mx-1  text-black text-sm">
+            ✓
+          </span>
+          Address
+        </div>
         <div className="font-medium text-xl p-2 ">..................</div>
-        <div className="font-medium text-xl p-2 relative right-4">Payment</div>
+        <div className="font-medium text-xl p-2 relative right-4">
+          <span class="inline-flex items-center justify-center w-5 h-5 rounded-full mx-1  text-black text-sm">
+            ✓
+          </span>{" "}
+          Payment
+        </div>
       </div>
 
       <div className=" flex items-center gap-5 justify-between">
