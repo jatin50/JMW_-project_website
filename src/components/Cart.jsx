@@ -144,20 +144,29 @@ const Cart = () => {
               SAVE EXTRA 10% OFF USING CODE - JMW10
             </div>
           </div>
-        <div className="w-11/12 h-50 p-2 m-5 rounded-2xl outline-1 flex-col gap-3 ">
-        <div className="flex items-center justify-center w-full text-2xl font-medium underline">
-          Total Items(2)
-          </div>
-          <div className=" flex items-baseline text-xl font-medium mt-3 ml-8">Price Total...............................................₹2499</div>
-          <div className=" flex items-baseline text-xl font-medium mt-1 ml-8">Discount...............................................₹499</div>
-          <div className=" flex items-baseline text-xl font-medium mt-1 ml-8">Shipping............................................... <span className="line-through text-gray-700/30 mr-1"> ₹49 </span> FREE </div>
-          <div className=" flex items-baseline text-xl font-medium mt-1 ml-8">Cart Total...............................................₹2099</div>
+          <div className="w-11/12 h-50 p-2 m-5 rounded-2xl outline-1 flex-col gap-3 ">
+            <div className="flex items-center justify-center w-full text-2xl font-medium underline">
+              Total Items(2)
+            </div>
+            <div className=" flex items-baseline text-xl font-medium mt-3 ml-8">
+              Price Total...............................................₹2499
+            </div>
+            <div className=" flex items-baseline text-xl font-medium mt-1 ml-8">
+              Discount...............................................₹499
+            </div>
+            <div className=" flex items-baseline text-xl font-medium mt-1 ml-8">
+              Shipping...............................................{" "}
+              <span className="line-through text-gray-700/30 mr-1"> ₹49 </span>{" "}
+              FREE{" "}
+            </div>
+            <div className=" flex items-baseline text-xl font-medium mt-1 ml-8">
+              Cart Total...............................................₹2099
+            </div>
           </div>
           <div className="flex items-center justify-center w-50 ml-50 my-7 h-10 bg-blue-500 text-white rounded-xl mt-4">
             ORDER NOW
           </div>
         </div>
-
       </div>
     </>
   );
