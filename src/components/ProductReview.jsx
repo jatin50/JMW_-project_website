@@ -66,7 +66,7 @@ const ProductReview = () => {
       ),
     },
   ];
-  const [openId, setOpenId] = useState("specs");
+  const [openId, setOpenId] = useState("NULL");
 
   return (
     <>
@@ -236,6 +236,7 @@ const ProductReview = () => {
           </div>
         </div>
       </div>
+      <div className=" w-full rounded-xl bg-[#D9D9D9]/20  h-30">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Dolore, quaerat!</div>
     </>
   );
 };

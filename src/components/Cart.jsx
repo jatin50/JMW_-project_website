@@ -1,5 +1,6 @@
 import React from "react";
-import { Trash2 } from "lucide-react";
+import { Link, Trash2 } from "lucide-react";
+import Address from "./Address";
 const Cart = () => {
   return (
     <>
@@ -181,9 +182,10 @@ const Cart = () => {
               Cart Total...............................................₹2099
             </div>
           </div>
-          <div className="flex items-center justify-center w-50 ml-50 my-7 h-10 bg-blue-500 text-white rounded-xl mt-4">
+          <button
+           className="flex items-center justify-center w-50 ml-50 my-7 h-10 bg-blue-500 text-white rounded-xl mt-4">
             ORDER NOW
-          </div>
+          </button>
         </div>
       </div>
     </>

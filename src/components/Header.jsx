@@ -1,34 +1,93 @@
 import React from "react";
 import { useState } from "react";
 import { Link, NavLink } from "react-router";
-import {ShoppingCart } from "lucide-react";
+import {ShoppingCart, } from "lucide-react";
 const Header = () => {
-  const [Open1, setOpen1] = useState(false);
-  const [Open2, setOpen2] = useState(false);
-  const [Open3, setOpen3] = useState(false);
-  const [Open4, setOpen4] = useState(false);
-  const [Open5, setOpen5] = useState(false);
+ const [openMenu, setOpenMenu] = useState(null);
+const toggleMenu = (menu) => {
+  setOpenMenu(openMenu === menu ? null : menu);
+};
+
+  const [showLogin, setShowLogin] = useState(false);
+  const[EnterOTP,setEnterOTP]=useState(false);
+  const handleClick = () => {
+  setShowLogin(false);
+  setEnterOTP(true);
+  
+};
   return (
     <>
       <div className="m-0 p-0 bg-black w-full h-10 flex justify-center items-center">
         <h2 className="text-white text-xl font-medium">
           Super Deal! Free Shipping on Orders Over ₹999
         </h2>
-        <div className=" relative left-90 text-black bg-white rounded-2xl w-24 h-8 flex items-center justify-center">
+        <button 
+         onClick={() => setShowLogin(true)}
+        className=" relative left-90 text-black bg-white rounded-2xl w-24 h-8 flex items-center justify-center">
           {" "}
           Login/Signup{" "}
-        </div>
+        </button>
+       {showLogin && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center">
+    
+    <div
+      className="absolute inset-0 bg-black/50"
+      onClick={() => setShowLogin(false)}
+    />
+    <div className="relative bg-white w-full max-w-sm rounded-xl p-6">
+      <h2 className="text-xl font-semibold mb-4">Login</h2>
+
+      <input
+        type="text"
+        placeholder="Email or Phone"
+        className="w-full border p-2 rounded mb-3"
+      />
+
+      <button
+        onClick={handleClick} 
+         className="w-full bg-black text-white py-2 rounded">
+        Get OTP
+      </button>
+    </div>
+  </div>
+)}
+
+
+  {EnterOTP && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center">
+    
+    <div
+      className="absolute inset-0 bg-black/50"
+      onClick={() => {setEnterOTP(false)} }
+    />
+    <div className="relative bg-white w-full max-w-sm rounded-xl p-6">
+      <h2 className="text-xl font-semibold mb-4">Login</h2>
+        <input
+        type="number"
+        placeholder="Enter OTP"
+        className="w-full border p-2 rounded mb-3"
+        required={true}
+      />
+      <button
+         className="w-full bg-black text-white py-2 rounded">
+       Enter OTP
+      </button>
+    </div>
+  </div>
+)}
+
+      
       </div>
       <div className=" bg-[#D9D9D9] h-20 flex justify-between items-baseline-last ">
         <div className="bold m-2 px-2 text-2xl text-black relative left-3">
           JATIN MENS WEAR
         </div>
         <div className="relative bottom-0 gap-5 px-2 flex left-30">
-          <button onClick={() => setOpen1(!Open1)} className="text-black">
+          <button onClick={() => toggleMenu('topWears')} className="text-black">
             TopWears ▼
           </button>
 
-          {Open1 && (
+          {openMenu === 'topWears' && (
             <div className="absolute right-80 mt-2 top-7 w-40 bg-white shadow-lg rounded">
               <a className="block px-4 py-2 hover:bg-gray-100">Plain T-shirt</a>
               <a className="block px-4 py-2 hover:bg-gray-100">
@@ -58,11 +117,11 @@ const Header = () => {
               </a>
             </div>
           )}
-          <button onClick={() => setOpen2(!Open2)} className="text-black">
+          <button onClick={() => toggleMenu('bottomWears')} className="text-black">
             Bottom Wear▼
           </button>
 
-          {Open2 && (
+          {openMenu === 'bottomWears' && (
             <div className="absolute right-60 top-7 mt-2 w-40 bg-white shadow-lg rounded">
               <a className="block px-4 py-2 hover:bg-gray-100">Plain Pants</a>
               <a className="block px-4 py-2 hover:bg-gray-100">Formal Pants</a>
@@ -80,11 +139,11 @@ const Header = () => {
               </a>
             </div>
           )}
-          <button onClick={() => setOpen5(!Open5)} className="text-black">
+          <button onClick={() => toggleMenu('combos')} className="text-black">
             Combos ▼
           </button>
 
-          {Open5 && (
+          {openMenu === 'combos' && (
             <div className="absolute right-40 top-7 mt-2 w-40 bg-white shadow-lg rounded">
               <a className="block px-4 py-2 hover:bg-gray-100">
                 3 Tshirts at 999/-
@@ -100,11 +159,11 @@ const Header = () => {
               </a>
             </div>
           )}
-          <button onClick={() => setOpen3(!Open3)} className="text-black">
+          <button onClick={() => toggleMenu('winterWear')} className="text-black">
             Winter-Wear ▼
           </button>
 
-          {Open3 && (
+          {openMenu === 'winterWear' && (
             <div className="absolute right-20 top-7 mt-2 w-40 bg-white shadow-lg rounded">
               <a className="block px-4 py-2 hover:bg-gray-100">Plain Hoodie</a>
               <a className="block px-4 py-2 hover:bg-gray-100">
@@ -124,11 +183,11 @@ const Header = () => {
               </a>
             </div>
           )}
-          <button onClick={() => setOpen4(!Open4)} className="text-black">
+          <button onClick={() => toggleMenu('newArrivals')} className="text-black">
             New Arrivals ▼
           </button>
 
-          {Open4 && (
+          {openMenu === 'newArrivals' && (
             <div className="absolute right-0 top-7 mt-2 w-40 bg-white shadow-lg rounded">
               <a className="block px-4 py-2 hover:bg-gray-100">
                 Checked Shirts
