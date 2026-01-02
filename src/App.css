@@ -4,4 +4,14 @@
    font-family: "KoPub Batang", serif;
    /* overflow: auto;
    scrollbar-width: none; */
+   /* Hide scrollbar but allow scroll */
+.no-scrollbar::-webkit-scrollbar {
+  display: none; 
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;  
+  scrollbar-width: none;    
+}
+
 }

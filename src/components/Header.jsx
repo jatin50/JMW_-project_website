@@ -1,6 +1,7 @@
 import React from "react";
 import { useState } from "react";
 import { Link, NavLink } from "react-router";
+import {ShoppingCart } from "lucide-react";
 const Header = () => {
   const [Open1, setOpen1] = useState(false);
   const [Open2, setOpen2] = useState(false);
@@ -18,7 +19,7 @@ const Header = () => {
           Login/Signup{" "}
         </div>
       </div>
-      <div className=" bg-[#D9D9D9] h-20 flex justify-between items-baseline-last px-20">
+      <div className=" bg-[#D9D9D9] h-20 flex justify-between items-baseline-last ">
         <div className="bold m-2 px-2 text-2xl text-black relative left-3">
           JATIN MENS WEAR
         </div>
@@ -143,10 +144,10 @@ const Header = () => {
             </div>
           )}
         </div>
-        <div className="relative right-10 bottom-10 w-10 h-8 rounded-2xl bg-white flex justify-center items-center">
+        <div className="relative right-10 bottom-6 w-10 h-8 rounded-2xl bg-white flex justify-center items-center">
           {" "}
           {/* <NavLink to="/src/components/Cart.jsx"> */}
-            cart
+          <ShoppingCart className="w-6 h-6 text-black" />
           {/* </NavLink> */}
         </div>
       </div>
