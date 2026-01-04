@@ -44,6 +44,7 @@ const Header = () => {
                 type="text"
                 placeholder="Email or Phone"
                 className="w-full border p-2 rounded mb-3"
+                required={true}
               />
 
               <button
