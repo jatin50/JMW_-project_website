@@ -3,8 +3,8 @@ import React from "react";
 const Footer = () => {
   return (
     <>
-    <footer>
-      <div className="bg-[#221E1E] text-white p-4  relative bottom-0 w-full h-50 ">
+    <footer className="">
+      <div className="bg-[#221E1E] text-white p-4  relative bottom-0 w-full h-50  ">
         <div className="container mx-auto">
           <div className="flex justify-between items-center">
             <div className="text-xl font-semibold relative left-10 mr-10">

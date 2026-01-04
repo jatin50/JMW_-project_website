@@ -59,7 +59,7 @@ const Home = () => {
   };
   return (
     <>
-      <div className="w-full h-auto ">
+      <div className="w-full h-auto p-1 ">
         <div className="w-full h-25 flex justify-center items-center text-2xl font-medium bg-[#FFF04A]">
           Lorem ipsum dolor, sit amet consectetur adipisicing elit.
         </div>
@@ -83,7 +83,7 @@ const Home = () => {
           </div>
         </div>
         <div className="w-full h-auto p-2 mt-10  flex justify-center items-center gap-4">
-          <div className="w-1/3 h-auto min-h-100  flex justify-center">
+          <div className="w-1/4 h-auto min-h-100  flex justify-center">
             <div className="w-4/5 h-auto  bg-[#D9D9D9]/20 shadow-2xl rounded-2xl p-4">
               <h2 className="text-center font-semibold mb-4">FILTER</h2>
 
@@ -121,7 +121,7 @@ const Home = () => {
               ))}
             </div>
           </div>
-          <div className="w-2/3 h-140 bg-[#D9D9D9]/20 overflow-y-scroll no-scrollbar rounded-xl mt-2">
+          <div className="w-3/4 h-140 bg-[#D9D9D9]/20 overflow-y-scroll no-scrollbar rounded-xl mt-2">
             <div className="flex-col w-full h-auto p-2">
               <div className="w-11/12 h-auto outline-1 rounded-2xl text-xl font-medium flex-col items-center justify-center m-10 p-2 pb-7 shadow-2xl">
                 <h1 className="text-2xl font-bold my-2 ">About Us</h1>
@@ -138,6 +138,15 @@ const Home = () => {
             </div>
           </div>
         </div>
+        <div className="text-2xl font-medium text-black flex justify-center border-b items-center ">
+            <p>SIMILAR PRODUCTS</p>
+        </div>
+        <div className="w-full h-120  bg-[#D9D9D9]/20 rounded-2xl shadow-xl my-6"> </div>
+        <div className="text-2xl font-medium text-black flex justify-center border-b items-center ">
+            <p>NEW ARRIVALS</p>
+        </div>
+        <div className="w-full h-120  bg-[#D9D9D9]/20 rounded-2xl shadow-xl my-6"> </div>
+        
       </div>
     </>
   );
