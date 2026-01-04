@@ -1,5 +1,6 @@
 import React from "react";
-import { Link, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
+import { Link } from "react-router";
 import Address from "./Address";
 const Cart = () => {
   return (
@@ -182,10 +183,12 @@ const Cart = () => {
               Cart Total...............................................₹2099
             </div>
           </div>
-          <button
+          <Link to="/Address">
+          <div
            className="flex items-center justify-center w-50 ml-50 my-7 h-10 bg-blue-500 text-white rounded-xl mt-4">
             ORDER NOW
-          </button>
+          </div>
+             </Link>
         </div>
       </div>
     </>

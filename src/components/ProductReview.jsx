@@ -1,6 +1,7 @@
 import React from "react";
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
+import Cart from "./Cart";
 const ProductReview = () => {
   const sizes = ["S", "L", "XL"];
   const colors = [
@@ -18,6 +19,7 @@ const ProductReview = () => {
       <p className="text-sm font-medium">{label}</p>
       <p className="text-sm text-gray-500">{value}</p>
     </div>
+
   );
 
   const accordionData = [
@@ -70,7 +72,7 @@ const ProductReview = () => {
 
   return (
     <>
-      <div className="m-2 h-full flex gap-10">
+      <div className="m-2 h-full flex gap-10 mt-4 mb-4">
         <div className="w-4/5 h-auto flex items-center justify-center  bg-[#D9D9D9]/20 rounded-2xl max-h-130">
           <div className="flex-col m-2">
             <div>

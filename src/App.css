@@ -1,17 +1,15 @@
-*{
-  /* margin: 0;
-  padding: 0; */
+/* *{
+   margin: 0;
+  padding: 0; 
    font-family: "KoPub Batang", serif;
-   /* overflow: auto;
+    overflow: auto;
    scrollbar-width: none; */
-   /* Hide scrollbar but allow scroll */
-.no-scrollbar::-webkit-scrollbar {
+
+/* .no-scrollbar::-webkit-scrollbar {
   display: none; 
 }
 
 .no-scrollbar {
   -ms-overflow-style: none;  
   scrollbar-width: none;    
-}
-
-}
+} */
