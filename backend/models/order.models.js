@@ -29,6 +29,7 @@ const categorySchema = new mongoose.Schema({
     },
     status:{
         type:String,
+        enum:["PENDING","CANCELLED","DELIVERED"]
     }
 }, { timestamps: true });
 
