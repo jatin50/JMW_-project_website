@@ -1,5 +1,5 @@
 import dotenv from "dotenv"
-import ConnectionDB from "../db/index.js"
+import ConnectionDB from "./db/index.js"
 import express from "express"
 dotenv.config({
     path: './env'
