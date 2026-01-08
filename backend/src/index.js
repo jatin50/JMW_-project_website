@@ -1,14 +1,13 @@
 import dotenv from "dotenv"
 import ConnectionDB from "./db/index.js"
-import express from "express"
+import { app } from "./app.js"
 dotenv.config({
     path: './env'
 })
 ConnectionDB()
 .then(()=>{
     const port = process.env.port||8000;
-    const app = express()
-    app.get('/', (req, res) => {
+    app.get("/", (req, res) => {
         res.send('server is running');
     });
 
