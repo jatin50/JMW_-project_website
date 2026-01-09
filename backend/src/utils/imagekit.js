@@ -1,5 +1,6 @@
 import ImageKit from "imagekit";
 import fs from "fs";
+import path from "path";
 
 const imagekit = new ImageKit({
   publicKey: process.env.IMAGEKIT_PUBLIC_KEY,
@@ -10,28 +11,25 @@ const imagekit = new ImageKit({
 const uploadToImageKit = async (localFilePath) => {
   try {
     if (!localFilePath) {
-      return {
-        success: false,
-        message: "No local file path provided",
-      };
+      return { success: false, message: "No local file path provided" };
     }
+
     if (!fs.existsSync(localFilePath)) {
-      return {
-        success: false,
-        message: "File does not exist at given path",
-      };
+      return { success: false, message: "File does not exist" };
     }
 
     const fileBuffer = fs.readFileSync(localFilePath);
 
     const response = await imagekit.upload({
       file: fileBuffer,
-      fileName: localFilePath.split("/").pop(),
-      folder: "products", // optional folder
+      fileName: path.basename(localFilePath),
+      folder: "products",
     });
-    console.log(response.url)
+
+    console.log("ImageKit URL:", response.url);
 
     fs.unlinkSync(localFilePath);
+    
 
     return {
       success: true,
@@ -40,12 +38,15 @@ const uploadToImageKit = async (localFilePath) => {
     };
 
   } catch (error) {
-    fs.unlinkSync(localFilePath);
-    console.error("ImageKit Upload Error:", error.message);
+    if (fs.existsSync(localFilePath)) {
+      fs.unlinkSync(localFilePath);
+    }
+
+    console.error("ImageKit Upload Error:", error);
 
     return {
       success: false,
-      message: "Image upload failed",
+      message: error.message || "Image upload failed",
     };
   }
 };

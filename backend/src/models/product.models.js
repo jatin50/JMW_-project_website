@@ -26,11 +26,11 @@ const productSchema = new mongoose.Schema({
         required:true,
     },
     color:{
-        type:Array,
+        type:[String],
         required:true,
     },
     size:{
-        type:Array,
+        type:[String],
         required:true,
     },
     gsm:{

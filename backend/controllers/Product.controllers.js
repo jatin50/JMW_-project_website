@@ -12,12 +12,12 @@ const UploadProduct = asyncHandler( async(req,res)=>{
 // create product on db
 // return response 
 
-const {price,description,category,fabric,color,size,gsm,stock,discount }= req.body
+const {name,price,description,fabric,color,size,gsm,stock,discount }= req.body
 console.log("price:",price)
-if([price,description,category,fabric,color,size,gsm,stock,discount].some((field)=>field?.trim()==="")){
+if([price,description,fabric,color,size,gsm,stock,discount].some((field)=>field?.trim()==="")){
 throw new apierrors(402,"ALL FIELDS MUST BE FILLED")
 }
-const ProductLocalPath = req.files?.Product[0]?.path
+const ProductLocalPath = req.files?.path
 if(!ProductLocalPath){
     throw new apierrors(409," product Image is required")
 }
@@ -26,9 +26,9 @@ if(!ProductImage){
     throw new apierrors(409," product Image is required")
 } 
  const product =  await Product.create({
-price,
+name,
+ price,
 description,
-category,
 fabric,
 color,
 size,
@@ -40,8 +40,11 @@ imageUrl:ProductImage.url
  if(!product){
     throw new apierrors(500,"Product is Not Uploaded Successfully Please Try Again")
  }
- return res.status(200).json(
+ return  await res.status(200).json(
     new apiresponse( 200,product,"Product Uploaded Successfully")
 )
+c
+
+
 })
 export{UploadProduct}

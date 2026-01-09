@@ -1,4 +1,3 @@
-import { Error } from "mongoose";
 
 class apierrors extends Error{
     constructor(

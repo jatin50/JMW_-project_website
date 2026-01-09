@@ -4,12 +4,7 @@ import { upload } from "../middleware/multer.middleware.js";
 
 const router = Router();
 router.route("/upload-product").post(
-  upload.fields([
-    {
-      name: "Product",
-      maxCount: 4
-    },
-  ]),
+  upload.single("imageUrl"),
   UploadProduct
 );
 export default router;
