@@ -13,6 +13,7 @@ const uploadToImageKit = async (localFilePath) => {
     if (!localFilePath) {
       return { success: false, message: "No local file path provided" };
     }
+    console.log( "localfilepath:",localFilePath)
 
     if (!fs.existsSync(localFilePath)) {
       return { success: false, message: "File does not exist" };
@@ -21,7 +22,7 @@ const uploadToImageKit = async (localFilePath) => {
     const fileBuffer = fs.readFileSync(localFilePath);
 
     const response = await imagekit.upload({
-      file: fileBuffer,
+      file: fileBuffer.toString("base64"),
       fileName: path.basename(localFilePath),
       folder: "products",
     });

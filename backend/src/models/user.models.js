@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
-
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken"
 const userSchema = new mongoose.Schema({
     username: {
         type: String,
@@ -18,21 +19,50 @@ const userSchema = new mongoose.Schema({
         type:Number,
         required:true,
     },
-    address:{
-        type:[
-            {
-                addressLine1: { type: String, required: true },
-                addressLine2: { type: String },
-                city: { type: String, required: true },
-                state: { type: String, required: true },
-                pincode: { type: Number, required: true },
-                country: { type: String, required: true },
-                district: { type: String, required: true },
-                
-            }
-        ]
+    AccessToken:{
+        type: String,
+        // required:true
+    },
+    RefreshToken:{
+        type: String,
+        // required:true
     }
 },{ timestamps: true });
 
+userSchema.pre("save", async function(next){
+    if(!this.isModified("password")) return next()
+
+       this.password= bcrypt.hash(this.password,10)
+next()
+})
+userSchema.methods.isPasswordCorrect = async function(password){
+ return await bcrypt.compare(password,this.password)
+}
+userSchema.methods.GenerateAccessToken = function(){
+    jwt.sign({
+        username : this.username,
+        _id: this._id,
+        email:this.email,
+        phonenumber:this.phonenumber
+    },
+process.env.ACCESS_TOKEN_SECRET,
+{
+    expiresIn :process.env.ACCESS_TOKEN_EXPIRY 
+}
+)
+}
+userSchema.methods.GenerateRefreshToken = function(){
+     jwt.sign({
+        username : this.username,
+        _id: this._id,
+        email:this.email,
+        phonenumber:this.phonenumber
+    },
+process.env.REFRESH_TOKEN_SECRET,
+{
+    expiresIn :process.env.REFRESH_TOKEN_EXPIRY 
+}
+)
+}
  export const User = mongoose.model('User', userSchema);
 

@@ -17,7 +17,8 @@ console.log("price:",price)
 if([price,description,fabric,color,size,gsm,stock,discount].some((field)=>field?.trim()==="")){
 throw new apierrors(402,"ALL FIELDS MUST BE FILLED")
 }
-const ProductLocalPath = req.files?.path
+const ProductLocalPath = req.file?.path
+console.log("Product Local Path",ProductLocalPath)
 if(!ProductLocalPath){
     throw new apierrors(409," product Image is required")
 }
