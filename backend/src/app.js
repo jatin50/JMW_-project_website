@@ -1,4 +1,4 @@
-import express, { urlencoded } from "express"
+import express from "express"
 import cors from "cors"
 import cookieparser from "cookie-parser"
 
@@ -10,6 +10,6 @@ app.use(cors({
 app.use( express.urlencoded({ extended:true,limit:"16kb"}))
 // app.use(express.static({limit:"16kb"}))
 app.use(cookieparser())
-import  userrouter  from "../routes/Product.routes.js";
+import userrouter from "../routes/Product.routes.js"
 app.use("/api/v2/products",userrouter)
 export {app}

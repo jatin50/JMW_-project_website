@@ -90,4 +90,8 @@ if(!user){
 ))
 
  })
- export { RegisterUser , LoginUser };
+
+ const LogoutUser = asyncHandler(async()=>{
+
+ })
+ export { RegisterUser , LoginUser, LogoutUser };
