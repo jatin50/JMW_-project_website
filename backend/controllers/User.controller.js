@@ -91,7 +91,25 @@ if(!user){
 
  })
 
- const LogoutUser = asyncHandler(async()=>{
-
+ const LogoutUser = asyncHandler(async(req,res)=>{
+await User.findByIdAndUpdate(
+  req.user._id,{
+    $set:{
+    RefreshToken: undefined
+  }
+  },{
+    new: true
+  }
+)
+const option ={
+  httpOnly:true,
+  secure:true
+}
+res.status(200)
+cookie("accesstoken",AccessToken,option)
+   .cookie("refreshtoken",RefreshToken,option)
+   .json(200,apiresponse(200,{},
+    "user logged out successfully"
+   ))
  })
  export { RegisterUser , LoginUser, LogoutUser };
