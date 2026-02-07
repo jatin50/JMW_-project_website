@@ -112,4 +112,25 @@ cookie("accesstoken",AccessToken,option)
     "user logged out successfully"
    ))
  })
- export { RegisterUser , LoginUser, LogoutUser };
+ const ChangePassword = asyncHandler(async(req,res)=>{
+  const {oldPassword,newPassword,confPassword} = req.body
+  if(!(confPassword=== newPassword)){
+    throw new apierrors(400,"New password must be same as confirm password")
+  }
+  const user = await User.findById(req.user._id)
+  if(!user){
+    throw new apierrors(404,"User not found")
+  }
+  const isPasswordCorrect = await user.isPasswordCorrect(oldPassword)
+  if(!isPasswordCorrect){
+    throw new apierrors(401,"Old password is incorrect")
+  }
+  user.password = newPassword
+  await user.save({validateBeforeSave:false})
+  return res.status(200).json(new apiresponse(200,{},"Password changed successfully"))
+
+ })
+ const GetUser = asyncHandler(async(req,res)=>{
+  return res.status(200).json(new apiresponse(200,{user:req.user},"User details fetched successfully"))
+ })
+ export { RegisterUser , LoginUser, LogoutUser,ChangePassword,GetUser };
