@@ -48,4 +48,66 @@ c
 
 
 })
-export{UploadProduct}
+ const getProducts =  asyncHandler(async (req, res) => {
+  const page = Number(req.query.page) || 1
+  const limit = Number(req.query.limit) || 12
+  const skip = (page - 1) * limit
+
+  let filter = {}
+
+  //  Search
+  if (req.query.keyword) {
+    filter.name = {
+      $regex: req.query.keyword,
+      $options: "i"
+    }
+  }
+
+  //  Category
+  if (req.query.category) {
+    filter.category = req.query.category
+  }
+
+  //  Price Filter
+  if (req.query.minPrice || req.query.maxPrice) {
+    filter.price = {}
+    if (req.query.minPrice) {
+      filter.price.$gte = Number(req.query.minPrice)
+    }
+    if (req.query.maxPrice) {
+      filter.price.$lte = Number(req.query.maxPrice)
+    }
+  }
+
+  //  Sorting
+  let sortOption = { createdAt: -1 } 
+
+  if (req.query.sort === "priceLow") {
+    sortOption = { price: 1 }
+  }
+
+  if (req.query.sort === "priceHigh") {
+    sortOption = { price: -1 }
+  }
+
+  //  Total count
+  const totalProducts = await Product.countDocuments(filter)
+
+  const products = await Product.find(filter)
+    .sort(sortOption)
+    .skip(skip)
+    .limit(limit)
+
+  res.status(200).json(
+      new apiresponse(200,{
+          products,
+          currentPage: page,
+          totalPages: Math.ceil(totalProducts / limit),
+          totalProducts,
+          hasMore: page < Math.ceil(totalProducts / limit)
+
+      })
+    )
+})
+
+export{UploadProduct,getProducts}
