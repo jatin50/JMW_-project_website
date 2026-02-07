@@ -112,6 +112,21 @@ cookie("accesstoken",AccessToken,option)
     "user logged out successfully"
    ))
  })
+ const refreshAccessToken = asyncHandler(async(req,res)=>{
+  const newrefreshToken = req.cookies.refreshtoken
+  if(!newrefreshToken){
+    throw new apierrors(401,"Refresh token is missing")
+  }
+  try{
+    const decoded = jwt.verify(newrefreshToken,process.env.REFRESH_TOKEN_SECRET)
+    const user = await User.findById(decoded._id?._id)
+    if(!user){
+      throw new apierrors(404,"User not found")
+    }
+  }catch(error){
+    throw new apierrors(403,"Invalid refresh token")
+  }
+ })
  const ChangePassword = asyncHandler(async(req,res)=>{
   const {oldPassword,newPassword,confPassword} = req.body
   if(!(confPassword=== newPassword)){
@@ -133,4 +148,4 @@ cookie("accesstoken",AccessToken,option)
  const GetUser = asyncHandler(async(req,res)=>{
   return res.status(200).json(new apiresponse(200,{user:req.user},"User details fetched successfully"))
  })
- export { RegisterUser , LoginUser, LogoutUser,ChangePassword,GetUser };
+ export { RegisterUser , LoginUser, refreshAccessToken, LogoutUser,ChangePassword,GetUser };
