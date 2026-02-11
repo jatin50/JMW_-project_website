@@ -4,7 +4,7 @@ import asyncHandler from "../src/utils/AsyncHandler.js";
 import { apierrors } from "../src/utils/apierrors.js";
 import { Product } from "../src/models/product.models.js";
 import { apiresponse } from "../src/utils/apiresponse.js";
-export const addToCart = asyncHandler(async (req, res) => {
+const addToCart = asyncHandler(async (req, res) => {
 
     const product = await Product.findById(req.params.productId)
 
@@ -55,3 +55,19 @@ export const addToCart = asyncHandler(async (req, res) => {
         new apiresponse(200, "Product added to cart successfully", cart)
     )
 })
+const deleteFromCart = asyncHandler(async(req,res)=>{
+    const cart = await Cart.findOne({userId:req.user._id})
+    if(!cart){
+        throw new apierrors(404,"cart not found")
+    }
+    const productIndex = cart.products.findIndex(p=>p.productId.toString()===req.params.productId)
+    if(productIndex>-1){
+        cart.products.splice(productIndex,1)
+    }
+    await cart.save()
+    return res.status(200).json(
+        new apiresponse(200,"product removed from cart successfully",cart)
+    )
+    
+})
+export{addToCart,deleteFromCart}
