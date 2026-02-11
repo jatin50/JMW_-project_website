@@ -61,13 +61,48 @@ const deleteFromCart = asyncHandler(async(req,res)=>{
         throw new apierrors(404,"cart not found")
     }
     const productIndex = cart.products.findIndex(p=>p.productId.toString()===req.params.productId)
-    if(productIndex>-1){
-        cart.products.splice(productIndex,1)
+   if (productIndex === -1) {
+        throw new apierrors(404, "Product not found in cart")
     }
+    cart.products.splice(productIndex, 1)
+    let total = 0
+    for (const item of cart.products) {
+        const product = await Product.findById(item.productId)
+        total += product.price * item.quantity
+    }
+
+    cart.TotalPrice = total
     await cart.save()
     return res.status(200).json(
         new apiresponse(200,"product removed from cart successfully",cart)
     )
-    
+
 })
-export{addToCart,deleteFromCart}
+const getCart = asyncHandler(async(req,res)=>{
+    const cart = await Cart.findOne({userId:req.user._id}).populate("products.productId","name price image color size")
+    if(!cart){
+        throw new apierrors(404,"cart not found")
+    }
+    return res.status(200).json(
+        new apiresponse(200,"cart fetched successfully",cart)
+    )
+})
+const decreaseQuantity = asyncHandler(async(req,res)=>{
+    const cart = await Cart.findOne({userId:req.user._id})
+    if(!cart){
+        throw new apierrors(404,"cart not found")
+    }
+    const productIndex = cart.products.findIndex(p=>p.productId.toString()===req.params.productId)
+    if(productIndex>-1){
+        if(cart.products[productIndex].quantity>1){
+            cart.products[productIndex].quantity -=1;
+        }else{
+            cart.products.splice(productIndex,1)
+        }
+    }
+    await cart.save()
+    return res.status(200).json(
+        new apiresponse(200,"product quantity decreased successfully",cart)
+    )
+})
+export{addToCart,deleteFromCart,getCart,decreaseQuantity}
