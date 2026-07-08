@@ -38,15 +38,15 @@ const userSchema = new mongoose.Schema({
 userSchema.pre("save", async function(next){
     if(!this.isModified("password")) return next()
 
-       this.password= bcrypt.hash(this.password,10)
+       this.password= await bcrypt.hash(this.password,10)
 next()
 })
 userSchema.methods.isPasswordCorrect = async function(password){
  return await bcrypt.compare(password,this.password)
 }
 userSchema.methods.GenerateAccessToken = function(){
-    jwt.sign({
-        userName : this.userName,
+   return jwt.sign({
+        name : this.name,
         _id: this._id,
         email:this.email,
         phonenumber:this.phonenumber
@@ -58,11 +58,8 @@ process.env.ACCESS_TOKEN_SECRET,
 )
 }
 userSchema.methods.GenerateRefreshToken = function(){
-     jwt.sign({
-        userName : this.userName,
+   return jwt.sign({
         _id: this._id,
-        email:this.email,
-        phonenumber:this.phonenumber
     },
 process.env.REFRESH_TOKEN_SECRET,
 {
@@ -71,4 +68,3 @@ process.env.REFRESH_TOKEN_SECRET,
 )
 }
  export const User = mongoose.model('User', userSchema);
-

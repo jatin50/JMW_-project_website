@@ -2,7 +2,7 @@ import dotenv from "dotenv"
 import ConnectionDB from "./db/index.js"
 import { app } from "./app.js"
 dotenv.config({
-    path: './env'
+    path: './.env'
 })
 ConnectionDB()
 .then(()=>{
@@ -20,4 +20,3 @@ ConnectionDB()
     console.error("Database connection failed:", error);
     process.exit(1);
 });
-
