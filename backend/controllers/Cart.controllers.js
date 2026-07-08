@@ -12,7 +12,7 @@ const addToCart = asyncHandler(async (req, res) => {
         throw new apierrors(404, "Product Not Found")
     }
 
-    if (product.countInStock <= 0) {
+    if (product.stock <= 0) {
         throw new apierrors(400, "Product Out of Stock")
     }
 
@@ -79,7 +79,7 @@ const deleteFromCart = asyncHandler(async(req,res)=>{
 
 })
 const getCart = asyncHandler(async(req,res)=>{
-    const cart = await Cart.findOne({userId:req.user._id}).populate("products.productId","name price image color size")
+    const cart = await Cart.findOne({userId:req.user._id}).populate("products.productId","name price imageUrl color size")
     if(!cart){
         throw new apierrors(404,"cart not found")
     }
