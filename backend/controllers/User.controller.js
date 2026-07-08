@@ -2,6 +2,7 @@ import { User } from "../src/models/user.models.js";
 import asyncHandler from "../src/utils/AsyncHandler.js";
 import { apierrors } from "../src/utils/apierrors.js";
 import { apiresponse } from "../src/utils/apiresponse.js";
+import jwt from "jsonwebtoken"
 
 const GenerateAccessAndRefreshToken = async(userId)=>{
 try {
@@ -43,7 +44,7 @@ const RegisterUser = asyncHandler(async(req,res)=>{
       throw new apierrors(500, "something went wrong user not created");
     }
      res.status(201).json(
-      new apiresponse(200, "User registered successfully", createdUser)
+      new apiresponse(200, createdUser, "User registered successfully")
     );
 console.log( "created user:",createdUser)
  });

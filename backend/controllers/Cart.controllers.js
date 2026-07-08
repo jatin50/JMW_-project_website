@@ -52,7 +52,7 @@ const addToCart = asyncHandler(async (req, res) => {
     await cart.save()
 
     return res.status(200).json(
-        new apiresponse(200, "Product added to cart successfully", cart)
+        new apiresponse(200, cart , "Product added to cart successfully")
     )
 })
 const deleteFromCart = asyncHandler(async(req,res)=>{
@@ -74,7 +74,7 @@ const deleteFromCart = asyncHandler(async(req,res)=>{
     cart.TotalPrice = total
     await cart.save()
     return res.status(200).json(
-        new apiresponse(200,"product removed from cart successfully",cart)
+        new apiresponse(200, cart,"product removed from cart successfully")
     )
 
 })
@@ -84,7 +84,7 @@ const getCart = asyncHandler(async(req,res)=>{
         throw new apierrors(404,"cart not found")
     }
     return res.status(200).json(
-        new apiresponse(200,"cart fetched successfully",cart)
+        new apiresponse(200, cart ,"cart fetched successfully")
     )
 })
 const decreaseQuantity = asyncHandler(async(req,res)=>{
@@ -102,7 +102,7 @@ const decreaseQuantity = asyncHandler(async(req,res)=>{
     }
     await cart.save()
     return res.status(200).json(
-        new apiresponse(200,"product quantity decreased successfully",cart)
+        new apiresponse(200, cart , "product quantity decreased successfully")
     )
 })
 export{addToCart,deleteFromCart,getCart,decreaseQuantity}
