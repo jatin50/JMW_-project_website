@@ -24,12 +24,13 @@ const orderSchema = new mongoose.Schema({
     },
     address:{
         type: mongoose.Schema.Types.ObjectId,
-        ref:'User.address',
+        ref:'Address',
         required:true,
     },
     status:{
         type:String,
-        enum:["PENDING","CANCELLED","DELIVERED"]
+        enum:["PENDING","CANCELLED","DELIVERED"],
+        default:"PENDING",
     }
 }, { timestamps: true });
 
