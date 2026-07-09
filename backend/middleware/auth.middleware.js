@@ -19,3 +19,10 @@ import jwt from "jsonwebtoken"
  }
 next()
  })
+
+export const isAdmin = (req,_,next)=>{
+  if(req.user?.role !== "admin"){
+    throw new apierrors(403,"Access denied: admin only")
+  }
+  next()
+}

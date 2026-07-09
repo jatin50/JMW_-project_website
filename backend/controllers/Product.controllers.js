@@ -12,13 +12,11 @@ const UploadProduct = asyncHandler( async(req,res)=>{
 // create product on db
 // return response 
 
-const {name,price,description,fabric,color,size,gsm,stock,discount }= req.body
-console.log("price:",price)
-if([price,description,fabric,color,size,gsm,stock,discount].some((field)=>field?.trim()==="")){
+const {name,price,description,fabric,color,size,gsm,stock,discount,category}= req.body
+if([name,price,description,fabric,color,size,gsm,stock,discount,category].some((field)=>field===undefined || field===null || field.toString().trim()==="")){
 throw new apierrors(402,"ALL FIELDS MUST BE FILLED")
 }
 const ProductLocalPath = req.file?.path
-console.log("Product Local Path",ProductLocalPath)
 if(!ProductLocalPath){
     throw new apierrors(409," product Image is required")
 }
@@ -36,6 +34,7 @@ size,
 gsm,
 stock,
 discount,
+category,
 imageUrl:ProductImage.url
  })
  if(!product){
@@ -109,4 +108,14 @@ imageUrl:ProductImage.url
     )
 })
 
-export{UploadProduct,getProducts}
+const getProductById = asyncHandler(async(req,res)=>{
+  const product = await Product.findById(req.params.productId).populate("category","name")
+  if(!product){
+    throw new apierrors(404,"Product not found")
+  }
+  return res.status(200).json(
+    new apiresponse(200,product,"Product fetched successfully")
+  )
+})
+
+export{UploadProduct,getProducts,getProductById}
