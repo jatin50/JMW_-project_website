@@ -1,6 +1,9 @@
-import { StrictMode } from "react";
+import { StrictMode, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
+import { Provider, useDispatch } from "react-redux";
+import { store } from "./store/store.js";
+import { fetchCurrentUser } from "./store/slices/userSlice.js";
 
 import {
   createBrowserRouter,
@@ -28,8 +31,21 @@ const router = createBrowserRouter(
   )
 );
 
+// checks for an existing login session (via cookie) once, when the app first loads
+function SessionBootstrap({ children }) {
+  const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(fetchCurrentUser());
+  }, [dispatch]);
+  return children;
+}
+
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <Provider store={store}>
+      <SessionBootstrap>
+        <RouterProvider router={router} />
+      </SessionBootstrap>
+    </Provider>
   </StrictMode>
 );
