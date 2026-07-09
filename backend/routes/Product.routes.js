@@ -1,8 +1,9 @@
 import { Router } from "express";
 import { UploadProduct, getProducts } from "../controllers/Product.controllers.js";
 import { upload } from "../middleware/multer.middleware.js";
-import { RegisterUser, LoginUser, LogoutUser, refreshAccessToken, ChangePassword, GetUser } from "../controllers/User.controller.js";
+import { addToCart, deleteFromCart, getCart, decreaseQuantity } from "../controllers/Cart.controllers.js";
 import { VerifyJwt } from "../middleware/auth.middleware.js";
+
 const router = Router();
 
 // product routes
@@ -12,11 +13,10 @@ router.route("/upload-product").post(
 );
 router.route("/").get(getProducts)
 
-router.route("/register").post(RegisterUser)
-router.route("/login").post(LoginUser)
-router.route("/logout").post(VerifyJwt, LogoutUser)
-router.route("/refresh-token").post(refreshAccessToken)
-router.route("/change-password").post(VerifyJwt, ChangePassword)
-router.route("/me").get(VerifyJwt, GetUser)
+// cart routes
+router.route("/cart").get(VerifyJwt, getCart)
+router.route("/cart/:productId").post(VerifyJwt, addToCart)
+router.route("/cart/:productId").delete(VerifyJwt, deleteFromCart)
+router.route("/cart/:productId/decrease").patch(VerifyJwt, decreaseQuantity)
 
 export default router;
