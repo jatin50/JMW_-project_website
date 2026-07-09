@@ -11,7 +11,7 @@ const itemSchema = new mongoose.Schema({
         default:1,
     }
 });
-const categorySchema = new mongoose.Schema({
+const orderSchema = new mongoose.Schema({
    orderprice:{
         type:Number,
         required:true,
@@ -33,4 +33,4 @@ const categorySchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
- export const Category = mongoose.model("Category", categorySchema);
+ export const Order = mongoose.model("Order", orderSchema);

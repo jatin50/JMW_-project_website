@@ -44,7 +44,6 @@ imageUrl:ProductImage.url
  return  await res.status(200).json(
     new apiresponse( 200,product,"Product Uploaded Successfully")
 )
-c
 
 
 })
