@@ -22,6 +22,10 @@ const productSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    imageFileId: {
+      type: String,
+      required: true,
+    },
     fabric: {
       type: String,
       required: true,

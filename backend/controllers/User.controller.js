@@ -3,6 +3,8 @@ import asyncHandler from "../src/utils/AsyncHandler.js";
 import { apierrors } from "../src/utils/apierrors.js";
 import { apiresponse } from "../src/utils/apiresponse.js";
 import jwt from "jsonwebtoken"
+import crypto from "crypto"
+import sendMail from "../src/utils/mailer.js"
 
 const GenerateAccessAndRefreshToken = async(userId)=>{
 try {
@@ -158,4 +160,66 @@ return res.status(200)
  const GetUser = asyncHandler(async(req,res)=>{
   return res.status(200).json(new apiresponse(200,{user:req.user},"User details fetched successfully"))
  })
- export { RegisterUser , LoginUser, refreshAccessToken, LogoutUser,ChangePassword,GetUser };
+
+ const forgotPassword = asyncHandler(async(req,res)=>{
+  const { email } = req.body
+  if(!email?.trim()){
+    throw new apierrors(400,"Email is required")
+  }
+
+  const user = await User.findOne({ email: email.toLowerCase().trim() })
+  // respond the same way whether or not the user exists, so attackers can't use this to find valid emails
+  if(!user){
+    return res.status(200).json(new apiresponse(200,{},"If that email exists, a reset link has been sent"))
+  }
+
+  const resetToken = crypto.randomBytes(32).toString("hex")
+  user.resetPasswordToken = crypto.createHash("sha256").update(resetToken).digest("hex")
+  user.resetPasswordExpiry = Date.now() + 15 * 60 * 1000 // 15 minutes
+  await user.save({ validateBeforeSave:false })
+
+  const resetUrl = `${process.env.CORS_ORIGIN}/reset-password/${resetToken}`
+
+  try{
+    await sendMail({
+      to: user.email,
+      subject: "Reset your password - Jatin Mens Wear",
+      html: `<p>Click the link below to reset your password. This link expires in 15 minutes.</p><a href="${resetUrl}">${resetUrl}</a>`
+    })
+  }catch(error){
+    user.resetPasswordToken = undefined
+    user.resetPasswordExpiry = undefined
+    await user.save({ validateBeforeSave:false })
+    throw new apierrors(500,"Failed to send reset email, please try again later")
+  }
+
+  return res.status(200).json(new apiresponse(200,{},"If that email exists, a reset link has been sent"))
+ })
+
+ const resetPassword = asyncHandler(async(req,res)=>{
+  const { token } = req.params
+  const { newPassword, confPassword } = req.body
+
+  if(newPassword !== confPassword){
+    throw new apierrors(400,"New password must be same as confirm password")
+  }
+
+  const hashedToken = crypto.createHash("sha256").update(token).digest("hex")
+  const user = await User.findOne({
+    resetPasswordToken: hashedToken,
+    resetPasswordExpiry: { $gt: Date.now() }
+  })
+
+  if(!user){
+    throw new apierrors(400,"Reset link is invalid or has expired")
+  }
+
+  user.password = newPassword
+  user.resetPasswordToken = undefined
+  user.resetPasswordExpiry = undefined
+  await user.save()
+
+  return res.status(200).json(new apiresponse(200,{},"Password reset successfully"))
+ })
+
+ export { RegisterUser , LoginUser, refreshAccessToken, LogoutUser,ChangePassword,GetUser,forgotPassword,resetPassword };

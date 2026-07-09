@@ -1,4 +1,5 @@
 import { apierrors } from "../src/utils/apierrors.js";
+import multer from "multer";
 
 // centralized error handler - must be registered last, after all routes
 const errorHandler = (err, req, res, next) => {
@@ -8,6 +9,14 @@ const errorHandler = (err, req, res, next) => {
       statuscode: err.statuscode,
       message: err.message,
       errors: err.errors,
+    });
+  }
+
+  if (err instanceof multer.MulterError || err.message?.includes("Only JPEG")) {
+    return res.status(400).json({
+      success: false,
+      statuscode: 400,
+      message: err.message,
     });
   }
 

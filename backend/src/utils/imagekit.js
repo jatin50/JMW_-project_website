@@ -52,4 +52,14 @@ const uploadToImageKit = async (localFilePath) => {
   }
 };
 
+const deleteFromImageKit = async (fileId) => {
+  if (!fileId) return;
+  try {
+    await imagekit.deleteFile(fileId);
+  } catch (error) {
+    console.error("ImageKit Delete Error:", error);
+  }
+};
+
 export default uploadToImageKit;
+export { deleteFromImageKit };

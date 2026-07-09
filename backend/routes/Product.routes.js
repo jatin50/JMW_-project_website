@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { UploadProduct, getProducts, getProductById } from "../controllers/Product.controllers.js";
+import { UploadProduct, getProducts, getProductById, UpdateProduct, DeleteProduct } from "../controllers/Product.controllers.js";
 import { upload } from "../middleware/multer.middleware.js";
 import { addToCart, deleteFromCart, getCart, decreaseQuantity } from "../controllers/Cart.controllers.js";
 import { VerifyJwt, isAdmin } from "../middleware/auth.middleware.js";
@@ -22,5 +22,7 @@ router.route("/cart/:productId").delete(VerifyJwt, deleteFromCart)
 router.route("/cart/:productId/decrease").patch(VerifyJwt, decreaseQuantity)
 
 router.route("/:productId").get(getProductById)
+router.route("/:productId").patch(VerifyJwt, isAdmin, upload.single("imageUrl"), UpdateProduct)
+router.route("/:productId").delete(VerifyJwt, isAdmin, DeleteProduct)
 
 export default router;

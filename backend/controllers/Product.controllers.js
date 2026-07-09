@@ -1,7 +1,7 @@
 import asyncHandler from "../src/utils/AsyncHandler.js";
 import { apierrors } from "../src/utils/apierrors.js";
 import { apiresponse } from "../src/utils/apiresponse.js";
-import uploadToImageKit from "../src/utils/imagekit.js";
+import uploadToImageKit, { deleteFromImageKit } from "../src/utils/imagekit.js";
 import { Product } from "../src/models/product.models.js";
 const UploadProduct = asyncHandler( async(req,res)=>{
 
@@ -21,8 +21,8 @@ if(!ProductLocalPath){
     throw new apierrors(409," product Image is required")
 }
 const ProductImage = await uploadToImageKit(ProductLocalPath)
-if(!ProductImage){
-    throw new apierrors(409," product Image is required")
+if(!ProductImage.success){
+    throw new apierrors(500, ProductImage.message || "Image upload failed")
 } 
  const product =  await Product.create({
 name,
@@ -35,7 +35,8 @@ gsm,
 stock,
 discount,
 category,
-imageUrl:ProductImage.url
+imageUrl:ProductImage.url,
+imageFileId:ProductImage.fileId
  })
  if(!product){
     throw new apierrors(500,"Product is Not Uploaded Successfully Please Try Again")
@@ -118,4 +119,49 @@ const getProductById = asyncHandler(async(req,res)=>{
   )
 })
 
-export{UploadProduct,getProducts,getProductById}
+const UpdateProduct = asyncHandler(async(req,res)=>{
+  const product = await Product.findById(req.params.productId)
+  if(!product){
+    throw new apierrors(404,"Product not found")
+  }
+
+  const allowedFields = ["name","price","description","fabric","color","size","gsm","stock","discount","category"]
+  allowedFields.forEach((field)=>{
+    if(req.body[field] !== undefined){
+      product[field] = req.body[field]
+    }
+  })
+
+  // replace image only if a new file was uploaded
+  if(req.file?.path){
+    const newImage = await uploadToImageKit(req.file.path)
+    if(!newImage.success){
+      throw new apierrors(500, newImage.message || "Image upload failed")
+    }
+    await deleteFromImageKit(product.imageFileId)
+    product.imageUrl = newImage.url
+    product.imageFileId = newImage.fileId
+  }
+
+  await product.save()
+
+  return res.status(200).json(
+    new apiresponse(200,product,"Product updated successfully")
+  )
+})
+
+const DeleteProduct = asyncHandler(async(req,res)=>{
+  const product = await Product.findById(req.params.productId)
+  if(!product){
+    throw new apierrors(404,"Product not found")
+  }
+
+  await deleteFromImageKit(product.imageFileId)
+  await product.deleteOne()
+
+  return res.status(200).json(
+    new apiresponse(200,{},"Product deleted successfully")
+  )
+})
+
+export{UploadProduct,getProducts,getProductById,UpdateProduct,DeleteProduct}
