@@ -11,12 +11,13 @@ const errorHandler = (err, req, res, next) => {
     });
   }
 
-  // fallback for unexpected errors (e.g. mongoose CastError, programming bugs)
+  // fallback for unexpected errors (e.g. mongoose CastError, malformed JSON body, programming bugs)
   console.error(err);
-  return res.status(500).json({
+  const statuscode = err.statusCode || err.status || 500;
+  return res.status(statuscode).json({
     success: false,
-    statuscode: 500,
-    message: "Internal server error",
+    statuscode,
+    message: statuscode === 500 ? "Internal server error" : err.message,
   });
 };
 
