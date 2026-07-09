@@ -178,7 +178,7 @@ return res.status(200)
   user.resetPasswordExpiry = Date.now() + 15 * 60 * 1000 // 15 minutes
   await user.save({ validateBeforeSave:false })
 
-  const resetUrl = `${process.env.CORS_ORIGIN}/reset-password/${resetToken}`
+  const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`
 
   try{
     await sendMail({
