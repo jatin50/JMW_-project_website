@@ -19,7 +19,7 @@ const ProductCard = ({ product }) => {
       to={`/product/${product._id}`}
       className="group block bg-[#1c1b22] border border-[rgba(243,239,230,0.14)] rounded-2xl p-3.5 transition-transform duration-300 hover:-translate-y-2 hover:border-tangerine"
     >
-      <div className="relative h-52 rounded-xl mb-3.5 overflow-hidden bg-gradient-to-br from-[#2a2831] to-[#201f26]">
+      <div className="relative h-52 rounded-xl mb-3.5 overflow-hidden bg-linear-to-br from-[#2a2831] to-[#201f26]">
         {product.imageUrl ? (
           <img
             src={product.imageUrl}

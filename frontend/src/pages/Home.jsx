@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchCategories } from "../store/slices/categorySlice.js";
 import api from "../api/axiosClient.js";
-import ProductCard from "../components/ProductCard.jsx";
+import ProductCard from "../components/ProductCart.jsx";
 
 const Home = () => {
   const dispatch = useDispatch();
