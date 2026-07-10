@@ -20,18 +20,15 @@ import ProductReview from "./components/ProductReview.jsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
-    <>
-      <Route path="/" element={<Layout />}>
-        <Route index element={<Home />} />
-        <Route path="product/:productId" element={<ProductReview />} />
-      </Route>
-      <Route path="/cart" element={<Cart />} />
-      <Route path="Address" element={<Address />} />
-    </>
+    <Route path="/" element={<Layout />}>
+      <Route index element={<Home />} />
+      <Route path="product/:productId" element={<ProductReview />} />
+      <Route path="cart" element={<Cart />} />
+      <Route path="address" element={<Address />} />
+    </Route>
   )
 );
 
-// checks for an existing login session (via cookie) once, when the app first loads
 function SessionBootstrap({ children }) {
   const dispatch = useDispatch();
   useEffect(() => {
