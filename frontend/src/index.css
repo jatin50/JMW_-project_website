@@ -1,16 +1,25 @@
 @import "tailwindcss";
-*{
-  /* margin: 0;
-  padding: 0; */
-   font-family: "KoPub Batang", serif;
-   /* Hide scrollbar but allow scroll */
+
+@theme {
+  --color-ink: #141319;
+  --color-paper: #F3EFE6;
+  --color-tangerine: #FF5A1F;
+  --color-acid: #F5FF3D;
+  --font-display: "Anton", sans-serif;
+  --font-sans: "Space Grotesk", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}
+
+body {
+  background: var(--color-ink);
+  color: var(--color-paper);
+  font-family: var(--font-sans);
+}
+
 .no-scrollbar::-webkit-scrollbar {
-  display: none; 
+  display: none;
 }
-
 .no-scrollbar {
-  -ms-overflow-style: none;  
-  scrollbar-width: none;    
-}
-
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

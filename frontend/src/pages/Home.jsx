@@ -1,154 +1,135 @@
-import React from "react";
-import { useState } from "react";
-import { ChevronDown } from "lucide-react";
+import { useEffect, useRef, useState, useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchCategories } from "../store/slices/categorySlice.js";
+import api from "../api/axiosClient.js";
+import ProductCard from "../components/ProductCard.jsx";
+
 const Home = () => {
-  const filters = [
-    {
-      id: "categories",
-      label: "CATEGORIES",
-      option1: "topwear",
-      option2: "bottomwear",
-      option3: "winterwear",
-      option4: "New Arrival",
-    },
-    {
-      id: "colors",
-      label: "COLORS",
-      option1: "Black",
-      option2: "White",
-      option3: "Red",
-      option4: "Blue",
-    },
-    {
-      id: "size",
-      label: "SIZE",
-      option1: "Small",
-      option2: "Medium",
-      option3: "Large",
-      option4: "Extra Large",
-    },
-    {
-      id: "pattern",
-      label: "PATTERN",
-      option1: "Plain",
-      option2: "Printed",
-      option3: "Checked",
-      option4: "Solid",
-    },
-    {
-      id: "fabric",
-      label: "FABRIC",
-      option1: "Cotton",
-      option2: "Polyester",
-      option3: "Wool",
-      option4: "Satin",
-    },
-    {
-      id: "combo",
-      label: "COMBO",
-      option1: "buy 2 get 1",
-      option2: "buy 3 get 2",
-      option3: "buy 4 get 3",
-      option4: "buy 5 get 4",
-    },
-  ];
-  const [openFilter, setOpenFilter] = useState(null);
+  const dispatch = useDispatch();
+  const { items: categories } = useSelector((state) => state.categories);
 
-  const toggleFilter = (id) => {
-    setOpenFilter(openFilter === id ? null : id);
-  };
+  const [activeCategory, setActiveCategory] = useState("all");
+  const [products, setProducts] = useState([]);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const observerRef = useRef(null);
+  const sentinelRef = useRef(null);
+
+  useEffect(() => {
+    dispatch(fetchCategories());
+  }, [dispatch]);
+
+  useEffect(() => {
+    setProducts([]);
+    setPage(1);
+    setHasMore(true);
+  }, [activeCategory]);
+
+  const loadProducts = useCallback(async () => {
+    if (isLoading || !hasMore) return;
+    setIsLoading(true);
+    try {
+      const params = { page, limit: 12 };
+      if (activeCategory !== "all") params.category = activeCategory;
+
+      const { data } = await api.get("/products", { params });
+      setProducts((prev) => (page === 1 ? data.data.products : [...prev, ...data.data.products]));
+      setHasMore(data.data.hasMore);
+    } catch (err) {
+      console.error("Failed to load products:", err);
+    } finally {
+      setIsLoading(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, activeCategory]);
+
+  useEffect(() => {
+    loadProducts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, activeCategory]);
+
+  useEffect(() => {
+    if (observerRef.current) observerRef.current.disconnect();
+
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !isLoading) {
+          setPage((prev) => prev + 1);
+        }
+      },
+      { rootMargin: "200px" }
+    );
+
+    if (sentinelRef.current) observerRef.current.observe(sentinelRef.current);
+    return () => observerRef.current?.disconnect();
+  }, [hasMore, isLoading]);
+
   return (
-    <>
-      <div className="w-full h-auto p-1 ">
-        <div className="w-full h-25 flex justify-center items-center text-2xl font-medium bg-[#FFF04A]">
-          Lorem ipsum dolor, sit amet consectetur adipisicing elit.
-        </div>
-        <div className=" w-full h-10 mt-5 flex items-center justify-center ">
-          <div className=" w-11/12 h-10 mt-5  flex items-center justify-between ">
-            <div className=" bg-[#D9D9D9]/20 text-xl font-medium text-black rounded-2xl w-30 shadow-xl h-8 flex justify-center items-center">
-              TopWear
-            </div>
-            <div className=" bg-[#D9D9D9]/20 text-xl font-medium text-black rounded-2xl w-30 shadow-xl h-8 flex justify-center items-center">
-              Bottom-Wear
-            </div>
-            <div className=" bg-[#D9D9D9]/20 text-xl font-medium text-black rounded-2xl w-30 shadow-xl h-8 flex justify-center items-center">
-              Combos
-            </div>
-            <div className=" bg-[#D9D9D9]/20 text-xl font-medium text-black rounded-2xl w-30 shadow-xl h-8 flex justify-center items-center">
-              Winter-Wear
-            </div>
-            <div className=" bg-[#D9D9D9]/20 text-xl font-medium text-black rounded-2xl w-30 shadow-xl h-8 flex justify-center items-center">
-              New Arrival
-            </div>
-          </div>
-        </div>
-        <div className="w-full h-auto p-2 mt-10  flex justify-center items-center gap-4">
-          <div className="w-1/4 h-auto min-h-100  flex justify-center">
-            <div className="w-4/5 h-auto  bg-[#D9D9D9]/20 shadow-2xl rounded-2xl p-4">
-              <h2 className="text-center font-semibold mb-4">FILTER</h2>
+    <div className="bg-ink text-paper min-h-screen">
+      <section className="px-6 md:px-10 pt-16 pb-14 border-b border-[rgba(243,239,230,0.14)]">
+        <h1 className="font-display uppercase leading-[0.92] text-[13vw] md:text-7xl">
+          Dress like<br />it's <span className="text-acid">your move.</span>
+        </h1>
+        <p className="mt-5 max-w-md text-paper/65 text-sm leading-relaxed">
+          Streetwear built for how you actually move — layered fits, honest fabric,
+          prices that don't punish you for having taste.
+        </p>
+      </section>
 
-              {filters.map((filter) => (
-                <div key={filter.id} className="border-b">
-                  <button
-                    onClick={() => toggleFilter(filter.id)}
-                    className="w-full flex justify-between items-center py-3 text-sm font-medium"
-                  >
-                    {filter.label}
-                    <ChevronDown
-                      size={16}
-                      className={`transition-transform ${
-                        openFilter === filter.id ? "rotate-180" : ""
-                      }`}
-                    />
-                  </button>
-                  {openFilter === filter.id && (
-                    <div className="pb-3 pl-2 space-y-2 text-sm text-gray-600">
-                      <label className="flex items-center gap-2">
-                        <input type="checkbox" /> {filter.option1}
-                      </label>
-                      <label className="flex items-center gap-2">
-                        <input type="checkbox" /> {filter.option2}
-                      </label>
-                      <label className="flex items-center gap-2">
-                        <input type="checkbox" /> {filter.option3}
-                      </label>
-                      <label className="flex items-center gap-2">
-                        <input type="checkbox" /> {filter.option4}
-                      </label>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="w-3/4 h-140 bg-[#D9D9D9]/20 overflow-y-scroll no-scrollbar rounded-xl mt-2">
-            <div className="flex-col w-full h-auto p-2">
-              <div className="w-11/12 h-auto outline-1 rounded-2xl text-xl font-medium flex-col items-center justify-center m-10 p-2 pb-7 shadow-2xl">
-                <h1 className="text-2xl font-bold my-2 ">About Us</h1>
-                Since 2015, we’ve been crafting men’s fashion that blends
-                timeless style with modern trends. Our focus is on quality
-                fabrics, perfect fits, and designs that elevate everyday wear.
-                From casual essentials to statement pieces, we create clothing
-                for men who value confidence, comfort, and authenticity.
-              </div>
-              <div className="w-full h-140 outline-1 rounded-2xl">
-                {/* product listing would go here */}
-                {/* on selecting different filters the product will be listed and on default some products will be shown */}
-              </div>
-            </div>
-          </div>
+      <section className="px-6 md:px-10 py-8">
+        <div className="flex gap-3 overflow-x-auto no-scrollbar">
+          <button
+            onClick={() => setActiveCategory("all")}
+            className={`shrink-0 px-6 py-2.5 rounded-full text-xs tracking-wider border transition-colors ${
+              activeCategory === "all"
+                ? "bg-paper text-ink border-paper"
+                : "border-[rgba(243,239,230,0.14)] hover:border-paper"
+            }`}
+          >
+            ALL
+          </button>
+          {categories.map((cat) => (
+            <button
+              key={cat._id}
+              onClick={() => setActiveCategory(cat._id)}
+              className={`shrink-0 px-6 py-2.5 rounded-full text-xs tracking-wider uppercase border transition-colors ${
+                activeCategory === cat._id
+                  ? "bg-paper text-ink border-paper"
+                  : "border-[rgba(243,239,230,0.14)] hover:border-paper"
+              }`}
+            >
+              {cat.name}
+            </button>
+          ))}
         </div>
-        <div className="text-2xl font-medium text-black flex justify-center border-b items-center ">
-            <p>SIMILAR PRODUCTS</p>
+      </section>
+
+      <section className="px-6 md:px-10 pb-20">
+        <div className="flex justify-between items-end mb-8 border-b border-[rgba(243,239,230,0.14)] pb-5">
+          <h2 className="font-display text-3xl uppercase">Fresh in</h2>
+          <span className="text-xs text-paper/50 tracking-wide">{products.length} loaded</span>
         </div>
-        <div className="w-full h-120  bg-[#D9D9D9]/20 rounded-2xl shadow-xl my-6"> </div>
-        <div className="text-2xl font-medium text-black flex justify-center border-b items-center ">
-            <p>NEW ARRIVALS</p>
+
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+          {products.map((product) => (
+            <ProductCard key={product._id} product={product} />
+          ))}
         </div>
-        <div className="w-full h-120  bg-[#D9D9D9]/20 rounded-2xl shadow-xl my-6"> </div>
-        
-      </div>
-    </>
+
+        {!isLoading && products.length === 0 && (
+          <p className="text-center text-paper/40 py-16 text-sm">No products found in this category yet.</p>
+        )}
+
+        {isLoading && (
+          <p className="text-center text-paper/40 py-10 text-sm tracking-wide">Loading more...</p>
+        )}
+
+        <div ref={sentinelRef} className="h-1" />
+      </section>
+    </div>
   );
 };
+
 export default Home;
