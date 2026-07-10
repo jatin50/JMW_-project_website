@@ -60,7 +60,7 @@ console.log( "created user:",createdUser)
     // give response
     const{name,password,email}= req.body
     console.log(name)
-if(!email||!name){
+if(!email&&!name){
     throw new apierrors(409,"email or username is required")
 }
 const user = await User.findOne({ $or:[{name},{email}]})
