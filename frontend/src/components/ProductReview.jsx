@@ -1,245 +1,220 @@
-import React from "react";
-import { useState } from "react";
-import { ChevronDown } from "lucide-react";
-import Cart from "./Cart";
+import { useEffect, useState, useMemo } from "react";
+import { useParams } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import api from "../api/axiosClient.js";
+import { addToCart, addGuestItem } from "../store/slices/cartSlice.js";
+import ProductCard from "./ProductCart.jsx";
+
 const ProductReview = () => {
-  const sizes = ["S", "L", "XL"];
-  const colors = [
-    { name: "Blue", value: "blue", class: "bg-blue-500" },
-    { name: "Red", value: "red", class: "bg-red-500" },
-    { name: "Yellow", value: "yellow", class: "bg-yellow-400" },
-    { name: "Green", value: "green", class: "bg-green-500" },
-    { name: "Pink", value: "pink", class: "bg-pink-500" },
-  ];
+  const { productId } = useParams();
+  const dispatch = useDispatch();
+  const { isAuthenticated } = useSelector((state) => state.user);
 
-  const [selectedSize, setSelectedSize] = useState(null);
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [selectedColor, setSelectedColor] = useState(null);
-  const Spec = ({ label, value }) => (
-    <div>
-      <p className="text-sm font-medium">{label}</p>
-      <p className="text-sm text-gray-500">{value}</p>
-    </div>
+  const [selectedSize, setSelectedSize] = useState(null);
+  const [adding, setAdding] = useState(false);
+  const [added, setAdded] = useState(false);
+  const [relatedProducts, setRelatedProducts] = useState([]);
 
+  useEffect(() => {
+    const loadProduct = async () => {
+      setLoading(true);
+      setRelatedProducts([]);
+      try {
+        const { data } = await api.get(`/products/${productId}`);
+        setProduct(data.data);
+        const firstInStock = data.data.variants.find((v) => v.stock > 0);
+        if (firstInStock) setSelectedColor(firstInStock.color);
+
+        if (data.data.category?._id) {
+          try {
+            const related = await api.get("/products", {
+              params: { category: data.data.category._id, limit: 8 },
+            });
+            setRelatedProducts(
+              related.data.data.products.filter((p) => p._id !== productId)
+            );
+          } catch {
+            // related products are a nice-to-have, don't block the page on failure
+          }
+        }
+      } catch (err) {
+        setError(err.response?.data?.message || "Product not found");
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadProduct();
+  }, [productId]);
+
+  const colors = useMemo(
+    () => (product ? [...new Set(product.variants.map((v) => v.color))] : []),
+    [product]
   );
 
-  const accordionData = [
-    {
-      id: "specs",
-      title: "Specifications",
-      subtitle: "Technical details and features",
-      content: (
-        <div className="grid grid-cols-2 gap-x-10 gap-y-6">
-          <Spec label="Fabric" value="Imported Poly Knit" />
-          <Spec label="Neck" value="High Neck Zipper" />
-          <Spec label="Pattern" value="Solid" />
-          <Spec label="Hemline" value="Ribbed" />
-          <Spec label="Sleeve" value="Ribbed Full Sleeves" />
-          <Spec label="Inner Lining" value="Bonded Fleece" />
-          <Spec label="Pocket" value="2" />
-        </div>
-      ),
-    },
-    {
-      id: "description",
-      title: "Description",
-      subtitle: "Product overview and details",
-      content: (
-        <p className="text-sm text-gray-600">
-          Premium winter wear designed for comfort, warmth, and style.
-        </p>
-      ),
-    },
-    {
-      id: "returns",
-      title: "Returns, Exchange, & Refund Policy",
-      subtitle: "7 days easy returns and exchange",
-      content: (
-        <p className="text-sm text-gray-600">
-          Easy 7-day return & exchange available.
-        </p>
-      ),
-    },
-    {
-      id: "marketed",
-      title: "Marketed By",
-      subtitle: "Company and distributor information",
-      content: (
-        <p className="text-sm text-gray-600">JATIN MENS WEAR Pvt Ltd, India</p>
-      ),
-    },
-  ];
-  const [openId, setOpenId] = useState("NULL");
+  const sizesForSelectedColor = useMemo(
+    () => (product ? product.variants.filter((v) => v.color === selectedColor) : []),
+    [product, selectedColor]
+  );
+
+  const selectedVariant = useMemo(
+    () => sizesForSelectedColor.find((v) => v.size === selectedSize),
+    [sizesForSelectedColor, selectedSize]
+  );
+
+  const handleColorChange = (color) => {
+    setSelectedColor(color);
+    setSelectedSize(null);
+  };
+
+  const handleAddToCart = async () => {
+    if (!selectedVariant) {
+      alert("Please select a color and size");
+      return;
+    }
+    if (selectedVariant.stock === 0) return;
+
+    setAdding(true);
+    if (isAuthenticated) {
+      const result = await dispatch(
+        addToCart({ productId, variantId: selectedVariant._id })
+      );
+      if (result.error) alert(result.payload || "Failed to add to cart");
+      else {
+        setAdded(true);
+        setTimeout(() => setAdded(false), 2000);
+      }
+    } else {
+      dispatch(
+        addGuestItem({
+          product,
+          variantId: selectedVariant._id,
+          color: selectedVariant.color,
+          size: selectedVariant.size,
+        })
+      );
+      setAdded(true);
+      setTimeout(() => setAdded(false), 2000);
+    }
+    setAdding(false);
+  };
+
+  if (loading) {
+    return <div className="bg-ink  min-h-screen flex items-center justify-center text-sm text-paper/50">Loading...</div>;
+  }
+  if (error || !product) {
+    return <div className="bg-ink  min-h-screen flex items-center justify-center text-sm text-tangerine">{error}</div>;
+  }
+
+  const hasDiscount = product.discount > 0;
+  const finalPrice = hasDiscount
+    ? Math.round(product.price - (product.price * product.discount) / 100)
+    : product.price;
 
   return (
-    <>
-      <div className="m-2 h-full flex gap-10 mt-4 mb-4">
-        <div className="w-4/5 h-auto flex items-center justify-center  bg-[#D9D9D9]/20 rounded-2xl max-h-130">
-          <div className="flex-col m-2">
-            <div>
-              <img
-                className="w-1/2 h-auto  relative left-5 m-2 rounded-xl "
-                src="/bartang island.webp"
-                alt=""
-              />
-            </div>
-            <div>
-              <img
-                className="w-1/2 h-auto  relative left-5 m-2 rounded-xl "
-                src="/bartang island.webp"
-                alt=""
-              />
-            </div>
-            <div>
-              <img
-                className="w-1/2 h-auto  relative left-5 m-2 rounded-xl "
-                src="/bartang island.webp"
-                alt=""
-              />
-            </div>
-          </div>
-          <div>
-            <img
-              className="w-3xl h-auto  relative right-20  rounded-xl"
-              src="/bartang island.webp"
-              alt=""
-            />
-          </div>
+    <div className="bg-ink text-paper min-h-screen px-6 md:px-10 py-10">
+      <div className="grid md:grid-cols-2 gap-10 max-w-5xl mx-auto">
+        <div className="rounded-2xl overflow-hidden bg-[#1c1b22] border border-[rgba(243,239,230,0.14)] h-105">
+          <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
         </div>
-        <div className="w-3/5 h-140 overflow-y-scroll no-scrollbar    bg-[#D9D9D9]/20 rounded-2xl">
-          <div className="w-11/12  h-auto  m-3 p-2  rounded-xl text-xl font-medium flex-col gap-4">
+
+        <div>
+          {product.category?.name && (
+            <span className="text-xs tracking-widest text-paper/40 uppercase">{product.category.name}</span>
+          )}
+          <h1 className="font-display text-3xl uppercase mt-1 mb-4">{product.name}</h1>
+
+          <div className="font-mono text-2xl mb-1">
+            {hasDiscount && <span className="line-through opacity-40 text-base mr-2">₹{product.price}</span>}
+            ₹{finalPrice}
+          </div>
+          {hasDiscount && <p className="text-acid text-xs mb-4">{product.discount}% off</p>}
+
+          <p className="text-paper/60 text-sm leading-relaxed mb-6">{product.description}</p>
+
+          <div className="grid grid-cols-2 gap-4 mb-6 text-sm">
             <div>
-              Price:{" "}
-              <span className="line-through text-gray-500/50 mr-2">
-                ₹1299/-{" "}
-              </span>{" "}
-              ₹999/ -
+              <p className="text-paper/40 text-xs mb-1">Fabric</p>
+              <p>{product.fabric}</p>
             </div>
-            <div>Desciption: Lorem ipsum dolor sit amet.</div>
-          </div>
-          <div className="w-11/12 h-30 outline-1 bg-linear-to-r from-white via bg-yellow-300 to-yellow-500 rounded-xl m-3 flex-col gap-1 items-center justify-center">
-            <div className=" relative top-0  w-auto h-10 outline-1 rounded-t-xl  flex items-center justify-center">
-              BONUS OFFERS
-            </div>
-            <div className=" flex items-center justify-center mt-4">
-              BUY 3 GET ONE FREE GIFT OF WORTH ₹499 TO ₹1499 !
+            <div>
+              <p className="text-paper/40 text-xs mb-1">GSM</p>
+              <p>{product.gsm}</p>
             </div>
           </div>
-          {/* SIZE */}
-          <div>
-            <p className="mb-2 font-medium m-3">Size:</p>
-            <div className="flex gap-3 m-3">
-              {sizes.map((size) => (
-                <button
-                  key={size}
-                  onClick={() => setSelectedSize(size)}
-                  className={`w-12 h-10 rounded-lg border text-sm font-medium
-                ${
-                  selectedSize === size
-                    ? "bg-blue-600 text-white border-blue-600"
-                    : "bg-gray-200 text-black border-gray-300"
-                }`}
-                >
-                  {size}
-                </button>
-              ))}
-            </div>
-          </div>
-          {/* COLOR */}
-          <div>
-            <p className="mb-2 font-medium m-3 "> Colors:</p>
-            <div className="flex gap-3 m-3">
+
+          <div className="mb-5">
+            <p className="text-paper/40 text-xs mb-2">Color</p>
+            <div className="flex gap-2 flex-wrap">
               {colors.map((color) => (
                 <button
-                  key={color.value}
-                  onClick={() => setSelectedColor(color.value)}
-                  className={`w-10 h-10 rounded-full border-2 flex items-center justify-center
-                ${
-                  selectedColor === color.value
-                    ? "border-blue-600"
-                    : "border-gray-300"
-                }`}
+                  key={color}
+                  onClick={() => handleColorChange(color)}
+                  className={`px-4 py-2 rounded-full text-xs capitalize border transition-colors ${
+                    selectedColor === color
+                      ? "bg-paper text-ink border-paper"
+                      : "border-[rgba(243,239,230,0.2)] hover:border-paper"
+                  }`}
                 >
-                  <span
-                    className={`w-6 h-6 rounded-full ${color.class}`}
-                  ></span>
+                  {color}
                 </button>
               ))}
             </div>
           </div>
-          <div className="mb-2 font-medium m-3 flex gap-1">
-            <p>Quantity:</p>
-            <select
-              className="w-15 h-5 text-black  relative m-1 outline-1 rounded-2xl "
-              name=" Quantity"
-              id=""
-            >
-              <option className="text-black text-s" value="1">
-                1
-              </option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-              <option value="5">5</option>
-              <option value="6">6</option>
-              <option value="7">7</option>
-              <option value="8">8</option>
-              <option value="9">9</option>
-              <option value="10">10</option>
-            </select>
-          </div>
-          <div className="m-3 w-11/12 h-10  flex justify-center items-center gap-4 ">
-            <button className="m-1 w-60 h-12 shadow-s rounded-xl text-xl bg-[#FBFE3A] ">
-              Add To Cart
-            </button>
-            <button className="m-1 w-60 h-12 shadow-s rounded-xl text-xl bg-[#FFA322] ">
-              Buy Now
-            </button>
-          </div>
-          <div className="m-3 w-11/12 h-10  flex items-center gap-4 cursor-pointer">
-            <p className="text-xl font-medium ">Check For Availability</p>
-            <input
-              className="bg-white text-black outline rounded-sm w-1/3 pl-3 "
-              type="number"
-              placeholder="Enter pincode here"
-              name="pincode"
-              id=" pincode"
-              min={100000}
-              max={999999}
-            />
-          </div>
-          <div className="w-11/12 flex items-center justify-center h-10 text-xl font-medium">
-            Product Details
-          </div>
-          <div className="border-t m-3 pt-4">
-            {accordionData.map((item) => (
-              <div key={item.id} className="border-b">
+
+          <div className="mb-6">
+            <p className="text-paper/40 text-xs mb-2">Size</p>
+            <div className="flex gap-2 flex-wrap">
+              {sizesForSelectedColor.map((v) => (
                 <button
-                  onClick={() => setOpenId(openId === item.id ? null : item.id)}
-                  className="w-full flex justify-between items-center py-4 text-left"
+                  key={v.size}
+                  onClick={() => setSelectedSize(v.size)}
+                  disabled={v.stock === 0}
+                  className={`w-11 h-11 rounded-full text-xs border transition-colors ${
+                    selectedSize === v.size
+                      ? "bg-paper text-ink border-paper"
+                      : "border-[rgba(243,239,230,0.2)] hover:border-paper"
+                  } ${v.stock === 0 ? "opacity-25 cursor-not-allowed line-through" : ""}`}
                 >
-                  <div>
-                    <h3 className="font-medium">{item.title}</h3>
-                    <p className="text-sm text-gray-500">{item.subtitle}</p>
-                  </div>
-
-                  <ChevronDown
-                    className={`transition-transform duration-300 ${
-                      openId === item.id ? "rotate-180" : ""
-                    }`}
-                  />
+                  {v.size}
                 </button>
+              ))}
+            </div>
+          </div>
 
-                {/* CONTENT */}
-                {openId === item.id && (
-                  <div className="pb-6">{item.content}</div>
-                )}
-              </div>
+          <p className={`text-xs mb-6 ${selectedVariant?.stock > 0 ? "text-acid" : "text-tangerine"}`}>
+            {selectedVariant
+              ? selectedVariant.stock > 0
+                ? `${selectedVariant.stock} in stock`
+                : "Out of stock in this size"
+              : "Select a color and size"}
+          </p>
+
+          <button
+            onClick={handleAddToCart}
+            disabled={!selectedVariant || selectedVariant.stock === 0 || adding}
+            className="w-full bg-tangerine text-ink font-bold py-3.5 rounded-full hover:bg-acid transition-colors disabled:opacity-40"
+          >
+            {adding ? "Adding..." : added ? "Added ✓" : "Add to cart"}
+          </button>
+        </div>
+      </div>
+
+      {relatedProducts.length > 0 && (
+        <div className="max-w-5xl mx-auto mt-16 pt-10 border-t border-[rgba(243,239,230,0.14)]">
+          <h2 className="font-display text-2xl uppercase mb-6">You might also like</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+            {relatedProducts.map((p) => (
+              <ProductCard key={p._id} product={p} />
             ))}
           </div>
         </div>
-      </div>
-      <div className=" w-full rounded-xl bg-[#D9D9D9]/20  h-30">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Dolore, quaerat!</div>
-    </>
+      )}
+    </div>
   );
 };
+
 export default ProductReview;
