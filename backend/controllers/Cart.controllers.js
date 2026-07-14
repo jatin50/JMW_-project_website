@@ -1,108 +1,135 @@
-
-import { Cart} from"../src/models/cart.models.js";
+import { Cart } from "../src/models/cart.models.js";
 import asyncHandler from "../src/utils/AsyncHandler.js";
 import { apierrors } from "../src/utils/apierrors.js";
 import { Product } from "../src/models/product.models.js";
 import { apiresponse } from "../src/utils/apiresponse.js";
+
+// recompute the cart total using each line item's live product price/discount
+const recalculateTotal = async (cart) => {
+  let total = 0;
+  for (const item of cart.products) {
+    const product = await Product.findById(item.productId);
+    if (!product) continue;
+    const unitPrice = product.discount > 0
+      ? Math.round(product.price - (product.price * product.discount) / 100)
+      : product.price;
+    total += unitPrice * item.quantity;
+  }
+  cart.TotalPrice = total;
+};
+
 const addToCart = asyncHandler(async (req, res) => {
+  const { variantId, quantity = 1 } = req.body;
+  if (!variantId) {
+    throw new apierrors(400, "variantId is required (pick a color/size)");
+  }
 
-    const product = await Product.findById(req.params.productId)
+  const product = await Product.findById(req.params.productId);
+  if (!product) {
+    throw new apierrors(404, "Product Not Found");
+  }
 
-    if (!product) {
-        throw new apierrors(404, "Product Not Found")
-    }
+  const variant = product.variants.id(variantId);
+  if (!variant) {
+    throw new apierrors(404, "Selected color/size is not available for this product");
+  }
 
-    if (product.stock <= 0) {
-        throw new apierrors(400, "Product Out of Stock")
-    }
+  let cart = await Cart.findOne({ userId: req.user._id });
+  if (!cart) {
+    cart = await Cart.create({ userId: req.user._id, products: [] });
+  }
 
-    let cart = await Cart.findOne({ userId: req.user._id })
+  const existingLine = cart.products.find(
+    (p) => p.productId.toString() === product._id.toString() && p.variantId.toString() === variantId
+  );
 
-    if (!cart) {
-        cart = await Cart.create({
-            userId: req.user._id,
-            products: [{
-                productId: product._id,
-                quantity: 1
-            }]
-        })
-    } else {
+  const currentQtyInCart = existingLine ? existingLine.quantity : 0;
+  if (currentQtyInCart + quantity > variant.stock) {
+    throw new apierrors(400, `Only ${variant.stock} left in stock for this color/size`);
+  }
 
-        const productIndex = cart.products.findIndex(
-            p => p.productId.toString() === product._id.toString()
-        )
+  if (existingLine) {
+    existingLine.quantity += quantity;
+  } else {
+    cart.products.push({
+      productId: product._id,
+      variantId: variant._id,
+      color: variant.color,
+      size: variant.size,
+      quantity,
+    });
+  }
 
-        if (productIndex > -1) {
-            cart.products[productIndex].quantity += 1
-        } else {
-            cart.products.push({
-                productId: product._id,
-                quantity: 1
-            })
-        }
-    }
-    let total = 0
-    for (const item of cart.products) {
-        const prod = await Product.findById(item.productId)
-        total += prod.price * item.quantity
-    }
+  await recalculateTotal(cart);
+  await cart.save();
 
-    cart.TotalPrice = total
+  return res.status(200).json(
+    new apiresponse(200, cart, "Product added to cart successfully")
+  );
+});
 
-    await cart.save()
+const deleteFromCart = asyncHandler(async (req, res) => {
+  const cart = await Cart.findOne({ userId: req.user._id });
+  if (!cart) {
+    throw new apierrors(404, "cart not found");
+  }
 
-    return res.status(200).json(
-        new apiresponse(200, cart , "Product added to cart successfully")
-    )
-})
-const deleteFromCart = asyncHandler(async(req,res)=>{
-    const cart = await Cart.findOne({userId:req.user._id})
-    if(!cart){
-        throw new apierrors(404,"cart not found")
-    }
-    const productIndex = cart.products.findIndex(p=>p.productId.toString()===req.params.productId)
-   if (productIndex === -1) {
-        throw new apierrors(404, "Product not found in cart")
-    }
-    cart.products.splice(productIndex, 1)
-    let total = 0
-    for (const item of cart.products) {
-        const product = await Product.findById(item.productId)
-        total += product.price * item.quantity
-    }
+  const { productId, variantId } = req.params;
+  const lineIndex = cart.products.findIndex(
+    (p) => p.productId.toString() === productId && p.variantId.toString() === variantId
+  );
+  if (lineIndex === -1) {
+    throw new apierrors(404, "Item not found in cart");
+  }
 
-    cart.TotalPrice = total
-    await cart.save()
-    return res.status(200).json(
-        new apiresponse(200, cart,"product removed from cart successfully")
-    )
+  cart.products.splice(lineIndex, 1);
+  await recalculateTotal(cart);
+  await cart.save();
 
-})
-const getCart = asyncHandler(async(req,res)=>{
-    const cart = await Cart.findOne({userId:req.user._id}).populate("products.productId","name price imageUrl color size")
-    if(!cart){
-        throw new apierrors(404,"cart not found")
-    }
-    return res.status(200).json(
-        new apiresponse(200, cart ,"cart fetched successfully")
-    )
-})
-const decreaseQuantity = asyncHandler(async(req,res)=>{
-    const cart = await Cart.findOne({userId:req.user._id})
-    if(!cart){
-        throw new apierrors(404,"cart not found")
-    }
-    const productIndex = cart.products.findIndex(p=>p.productId.toString()===req.params.productId)
-    if(productIndex>-1){
-        if(cart.products[productIndex].quantity>1){
-            cart.products[productIndex].quantity -=1;
-        }else{
-            cart.products.splice(productIndex,1)
-        }
-    }
-    await cart.save()
-    return res.status(200).json(
-        new apiresponse(200, cart , "product quantity decreased successfully")
-    )
-})
-export{addToCart,deleteFromCart,getCart,decreaseQuantity}
+  return res.status(200).json(
+    new apiresponse(200, cart, "Item removed from cart successfully")
+  );
+});
+
+const getCart = asyncHandler(async (req, res) => {
+  let cart = await Cart.findOne({ userId: req.user._id }).populate(
+    "products.productId",
+    "name price imageUrl discount"
+  );
+  if (!cart) {
+    cart = await Cart.create({ userId: req.user._id, products: [] });
+  }
+  return res.status(200).json(
+    new apiresponse(200, cart, "cart fetched successfully")
+  );
+});
+
+const decreaseQuantity = asyncHandler(async (req, res) => {
+  const cart = await Cart.findOne({ userId: req.user._id });
+  if (!cart) {
+    throw new apierrors(404, "cart not found");
+  }
+
+  const { productId, variantId } = req.params;
+  const lineIndex = cart.products.findIndex(
+    (p) => p.productId.toString() === productId && p.variantId.toString() === variantId
+  );
+  if (lineIndex === -1) {
+    throw new apierrors(404, "Item not found in cart");
+  }
+
+  if (cart.products[lineIndex].quantity > 1) {
+    cart.products[lineIndex].quantity -= 1;
+  } else {
+    cart.products.splice(lineIndex, 1);
+  }
+
+  await recalculateTotal(cart);
+  await cart.save();
+
+  return res.status(200).json(
+    new apiresponse(200, cart, "Quantity updated successfully")
+  );
+});
+
+export { addToCart, deleteFromCart, getCart, decreaseQuantity };
