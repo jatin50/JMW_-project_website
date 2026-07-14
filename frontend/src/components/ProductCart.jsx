@@ -1,17 +1,25 @@
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { addToCart } from "../store/slices/cartSlice.js";
 
 const ProductCard = ({ product }) => {
   const dispatch = useDispatch();
+  const { isAuthenticated } = useSelector((state) => state.user);
   const hasDiscount = product.discount > 0;
   const finalPrice = hasDiscount
     ? Math.round(product.price - (product.price * product.discount) / 100)
     : product.price;
 
-  const handleAddToCart = (e) => {
-    e.preventDefault(); // don't navigate when clicking the button inside the link
-    dispatch(addToCart(product._id));
+  const handleAddToCart = async (e) => {
+    e.preventDefault();
+    if (!isAuthenticated) {
+      alert("Please login to add items to your cart.");
+      return;
+    }
+    const result = await dispatch(addToCart(product._id));
+    if (result.error) {
+      alert(result.payload || "Failed to add to cart");
+    }
   };
 
   return (

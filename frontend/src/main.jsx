@@ -16,6 +16,7 @@ import Layout from "./components/Layout.jsx";
 import Home from "./pages/Home.jsx";
 import Cart from "./components/Cart.jsx";
 import Address from "./components/Address.jsx";
+import Payment from "./components/Payment.jsx";
 import ProductReview from "./components/ProductReview.jsx";
 
 const router = createBrowserRouter(
@@ -25,6 +26,7 @@ const router = createBrowserRouter(
       <Route path="product/:productId" element={<ProductReview />} />
       <Route path="cart" element={<Cart />} />
       <Route path="address" element={<Address />} />
+      <Route path="payment" element={<Payment />} />
     </Route>
   )
 );
