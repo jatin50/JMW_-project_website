@@ -1,4 +1,14 @@
 import mongoose from "mongoose";
+
+const variantSchema = new mongoose.Schema(
+  {
+    color: { type: String, required: true },
+    size: { type: String, required: true },
+    stock: { type: Number, required: true, default: 0, min: 0 },
+  },
+  { _id: true }
+);
+
 const productSchema = new mongoose.Schema(
   {
     name: {
@@ -30,27 +40,22 @@ const productSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    color: {
-      type: [String],
-      required: true,
-    },
-    size: {
-      type: [String],
-      required: true,
-    },
     gsm: {
       type: Number,
       required: true,
-    },
-    stock: {
-      type: Number,
-      required: true,
-      default: 1,
     },
     discount: {
       type: Number,
       required: true,
       default: 0,
+    },
+    variants: {
+      type: [variantSchema],
+      required: true,
+      validate: {
+        validator: (v) => Array.isArray(v) && v.length > 0,
+        message: "At least one color/size variant is required",
+      },
     },
   },
   { timestamps: true }
