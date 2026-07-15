@@ -8,6 +8,52 @@ import { Product } from "../src/models/product.models.js";
 import razorpay from "../src/utils/razorpay.js";
 import crypto from "crypto";
 
+// shared: confirms every cart line still has enough stock in its specific variant
+const assertCartStockAvailable = async (cart) => {
+  const products = await Product.find({ _id: { $in: cart.products.map((item) => item.productId) } });
+  const productMap = new Map(products.map((product) => [product._id.toString(), product]));
+
+  for (const item of cart.products) {
+    const product = productMap.get(item.productId.toString());
+    if (!product) {
+      throw new apierrors(404, "One of the products in your cart no longer exists");
+    }
+    const variant = product.variants.id(item.variantId);
+    if (!variant) {
+      throw new apierrors(404, `${product.name} (${item.color}/${item.size}) is no longer available`);
+    }
+    if (variant.stock < item.quantity) {
+      throw new apierrors(400, `${product.name} (${item.color}/${item.size}) only has ${variant.stock} left`);
+    }
+  }
+  return productMap;
+};
+
+const decrementCartStock = async (cart) => {
+  await Promise.all(
+    cart.products.map(async (item) => {
+      const product = await Product.findById(item.productId);
+      const variant = product.variants.id(item.variantId);
+      variant.stock -= item.quantity;
+      await product.save();
+    })
+  );
+};
+
+const restockOrderItems = async (order) => {
+  await Promise.all(
+    order.orderitems.map(async (item) => {
+      const product = await Product.findById(item.porductId);
+      if (!product) return;
+      const variant = product.variants.id(item.variantId);
+      if (variant) {
+        variant.stock += item.quantity;
+        await product.save();
+      }
+    })
+  );
+};
+
 // step 1: create a Razorpay order for the current cart total
 const createRazorpayOrder = asyncHandler(async (req, res) => {
   const { addressId } = req.body;
@@ -25,19 +71,7 @@ const createRazorpayOrder = asyncHandler(async (req, res) => {
     throw new apierrors(400, "Cart is empty");
   }
 
-  // verify stock upfront so we don't charge for something we can't fulfil
-  const products = await Product.find({ _id: { $in: cart.products.map((item) => item.productId) } });
-  const productMap = new Map(products.map((product) => [product._id.toString(), product]));
-
-  for (const item of cart.products) {
-    const product = productMap.get(item.productId.toString());
-    if (!product) {
-      throw new apierrors(404, "One of the products in your cart no longer exists");
-    }
-    if (product.stock < item.quantity) {
-      throw new apierrors(400, `${product.name} only has ${product.stock} left in stock`);
-    }
-  }
+  await assertCartStockAvailable(cart);
 
   const razorpayOrder = await razorpay.orders.create({
     amount: Math.round(cart.TotalPrice * 100), // razorpay expects paise
@@ -83,28 +117,18 @@ const verifyPaymentAndPlaceOrder = asyncHandler(async (req, res) => {
   }
 
   // re-check stock right before committing - it may have changed since checkout started
-  const products = await Product.find({ _id: { $in: cart.products.map((item) => item.productId) } });
-  const productMap = new Map(products.map((product) => [product._id.toString(), product]));
-
-  for (const item of cart.products) {
-    const product = productMap.get(item.productId.toString());
-    if (!product) {
-      throw new apierrors(404, "One of the products in your cart no longer exists");
-    }
-    if (product.stock < item.quantity) {
-      throw new apierrors(400, `${product.name} only has ${product.stock} left in stock`);
-    }
-  }
-
-  await Promise.all(
-    cart.products.map((item) =>
-      Product.findByIdAndUpdate(item.productId, { $inc: { stock: -item.quantity } })
-    )
-  );
+  await assertCartStockAvailable(cart);
+  await decrementCartStock(cart);
 
   const order = await Order.create({
     orderprice: cart.TotalPrice,
-    orderitems: cart.products.map((item) => ({ porductId: item.productId, quantity: item.quantity })),
+    orderitems: cart.products.map((item) => ({
+      porductId: item.productId,
+      variantId: item.variantId,
+      color: item.color,
+      size: item.size,
+      quantity: item.quantity,
+    })),
     userId: req.user._id,
     address: address._id,
     razorpayOrderId: razorpay_order_id,
@@ -156,12 +180,7 @@ const cancelOrder = asyncHandler(async (req, res) => {
     throw new apierrors(400, `Order already ${order.status.toLowerCase()}, cannot cancel`);
   }
 
-  // restock the cancelled items
-  await Promise.all(
-    order.orderitems.map((item) =>
-      Product.findByIdAndUpdate(item.porductId, { $inc: { stock: item.quantity } })
-    )
-  );
+  await restockOrderItems(order);
 
   order.status = "CANCELLED";
   await order.save();
