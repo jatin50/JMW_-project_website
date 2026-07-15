@@ -19,16 +19,34 @@ import Cart from "./components/Cart.jsx";
 import Address from "./components/Address.jsx";
 import Payment from "./components/Payment.jsx";
 import ProductReview from "./components/ProductReview.jsx";
+import AdminRoute from "./components/AdminRoute.jsx";
+import AdminLayout from "./pages/admin/AdminLayout.jsx";
+import AdminProducts from "./pages/admin/AdminProducts.jsx";
+import AdminUploadProduct from "./pages/admin/AdminUploadProduct.jsx";
+import AdminEditProduct from "./pages/admin/AdminEditProduct.jsx";
+import AdminCategories from "./pages/admin/AdminCategories.jsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
-    <Route path="/" element={<Layout />}>
-      <Route index element={<Home />} />
-      <Route path="product/:productId" element={<ProductReview />} />
-      <Route path="cart" element={<Cart />} />
-      <Route path="address" element={<Address />} />
-      <Route path="payment" element={<Payment />} />
-    </Route>
+    <>
+      <Route path="/" element={<Layout />}>
+        <Route index element={<Home />} />
+        <Route path="product/:productId" element={<ProductReview />} />
+        <Route path="cart" element={<Cart />} />
+        <Route path="address" element={<Address />} />
+        <Route path="payment" element={<Payment />} />
+      </Route>
+
+      <Route element={<AdminRoute />}>
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<AdminProducts />} />
+          <Route path="products" element={<AdminProducts />} />
+          <Route path="upload" element={<AdminUploadProduct />} />
+          <Route path="edit/:productId" element={<AdminEditProduct />} />
+          <Route path="categories" element={<AdminCategories />} />
+        </Route>
+      </Route>
+    </>
   )
 );
 
@@ -41,7 +59,7 @@ function SessionBootstrap({ children }) {
   }, [dispatch]);
 
   useEffect(() => {
-    if (!authChecked) return; // wait until we know for sure
+    if (!authChecked) return;
     if (isAuthenticated) {
       dispatch(fetchCart());
     } else {
