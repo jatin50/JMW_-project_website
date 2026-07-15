@@ -1,10 +1,13 @@
 import { useDispatch, useSelector } from "react-redux";
-import { Link } from "react-router-dom";
-import { addToCart } from "../store/slices/cartSlice.js";
+import { Link, useNavigate } from "react-router-dom";
+import { addToCart, addGuestItem } from "../store/slices/cartSlice.js";
 
 const ProductCard = ({ product }) => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { isAuthenticated } = useSelector((state) => state.user);
+
+  const totalStock = product.variants.reduce((sum, v) => sum + v.stock, 0);
   const hasDiscount = product.discount > 0;
   const finalPrice = hasDiscount
     ? Math.round(product.price - (product.price * product.discount) / 100)
@@ -12,13 +15,21 @@ const ProductCard = ({ product }) => {
 
   const handleAddToCart = async (e) => {
     e.preventDefault();
-    if (!isAuthenticated) {
-      alert("Please login to add items to your cart.");
+    if (totalStock === 0) return;
+
+    // if there's more than one color/size option, send them to the detail page to choose
+    const inStockVariants = product.variants.filter((v) => v.stock > 0);
+    if (inStockVariants.length > 1) {
+      navigate(`/product/${product._id}`);
       return;
     }
-    const result = await dispatch(addToCart(product._id));
-    if (result.error) {
-      alert(result.payload || "Failed to add to cart");
+
+    const variant = inStockVariants[0];
+    if (isAuthenticated) {
+      const result = await dispatch(addToCart({ productId: product._id, variantId: variant._id }));
+      if (result.error) alert(result.payload || "Failed to add to cart");
+    } else {
+      dispatch(addGuestItem({ product, variantId: variant._id, color: variant.color, size: variant.size }));
     }
   };
 
@@ -45,7 +56,7 @@ const ProductCard = ({ product }) => {
             -{product.discount}%
           </span>
         )}
-        {product.stock === 0 && (
+        {totalStock === 0 && (
           <span className="absolute inset-0 bg-ink/70 flex items-center justify-center text-xs tracking-widest">
             SOLD OUT
           </span>
@@ -65,10 +76,10 @@ const ProductCard = ({ product }) => {
 
       <button
         onClick={handleAddToCart}
-        disabled={product.stock === 0}
+        disabled={totalStock === 0}
         className="w-full py-2 rounded-full text-xs font-bold tracking-wide bg-paper text-ink transition-colors hover:bg-acid disabled:opacity-30 disabled:cursor-not-allowed"
       >
-        {product.stock === 0 ? "OUT OF STOCK" : "ADD TO CART"}
+        {totalStock === 0 ? "OUT OF STOCK" : "ADD TO CART"}
       </button>
     </Link>
   );
