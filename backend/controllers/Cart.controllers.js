@@ -62,6 +62,7 @@ const addToCart = asyncHandler(async (req, res) => {
 
   await recalculateTotal(cart);
   await cart.save();
+  await cart.populate("products.productId", "name price imageUrl discount");
 
   return res.status(200).json(
     new apiresponse(200, cart, "Product added to cart successfully")
@@ -85,6 +86,7 @@ const deleteFromCart = asyncHandler(async (req, res) => {
   cart.products.splice(lineIndex, 1);
   await recalculateTotal(cart);
   await cart.save();
+  await cart.populate("products.productId", "name price imageUrl discount");
 
   return res.status(200).json(
     new apiresponse(200, cart, "Item removed from cart successfully")
@@ -126,6 +128,7 @@ const decreaseQuantity = asyncHandler(async (req, res) => {
 
   await recalculateTotal(cart);
   await cart.save();
+  await cart.populate("products.productId", "name price imageUrl discount");
 
   return res.status(200).json(
     new apiresponse(200, cart, "Quantity updated successfully")

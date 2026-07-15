@@ -21,7 +21,7 @@ import Payment from "./components/Payment.jsx";
 import ProductReview from "./components/ProductReview.jsx";
 import AdminRoute from "./components/AdminRoute.jsx";
 import AdminLayout from "./pages/admin/AdminLayout.jsx";
-import AdminProducts from "./pages/admin/";
+import AdminProducts from "./pages/admin/AdminProduct.jsx";
 import AdminUploadProduct from "./pages/admin/AdminUploadProduct.jsx";
 import AdminEditProduct from "./pages/admin/AdminEditProduct.jsx";
 import AdminCategories from "./pages/admin/AdminCategories.jsx";
