@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { ShoppingCart, X } from "lucide-react";
 import { loginUser, registerUser, logoutUser } from "../store/slices/userSlice.js";
+import { mergeGuestCartIntoAccount } from "../store/slices/cartSlice.js";
 
 const navItems = ["Topwear", "Bottomwear", "Combos", "Winterwear", "New arrivals"];
 
@@ -26,6 +27,7 @@ const Header = () => {
       if (mode === "register") {
         setMode("login");
       } else {
+        await dispatch(mergeGuestCartIntoAccount());
         setAuthOpen(false);
       }
     }

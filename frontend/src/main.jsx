@@ -1,9 +1,10 @@
 import { StrictMode, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
-import { Provider, useDispatch } from "react-redux";
+import { Provider, useDispatch, useSelector } from "react-redux";
 import { store } from "./store/store.js";
 import { fetchCurrentUser } from "./store/slices/userSlice.js";
+import { fetchCart, loadGuestCartFromStorage } from "./store/slices/cartSlice.js";
 
 import {
   createBrowserRouter,
@@ -33,9 +34,21 @@ const router = createBrowserRouter(
 
 function SessionBootstrap({ children }) {
   const dispatch = useDispatch();
+  const { authChecked, isAuthenticated } = useSelector((state) => state.user);
+
   useEffect(() => {
     dispatch(fetchCurrentUser());
   }, [dispatch]);
+
+  useEffect(() => {
+    if (!authChecked) return; // wait until we know for sure
+    if (isAuthenticated) {
+      dispatch(fetchCart());
+    } else {
+      dispatch(loadGuestCartFromStorage());
+    }
+  }, [authChecked, isAuthenticated, dispatch]);
+
   return children;
 }
 
