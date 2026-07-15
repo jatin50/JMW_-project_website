@@ -76,7 +76,7 @@ const createRazorpayOrder = asyncHandler(async (req, res) => {
   const razorpayOrder = await razorpay.orders.create({
     amount: Math.round(cart.TotalPrice * 100), // razorpay expects paise
     currency: "INR",
-    receipt: `receipt_${req.user._id}_${Date.now()}`,
+    receipt: `receipt_${req.user._id}`,
   });
 
   return res.status(200).json(

@@ -5,10 +5,12 @@ import { Product } from "../src/models/product.models.js";
 import { apiresponse } from "../src/utils/apiresponse.js";
 
 // recompute the cart total using each line item's live product price/discount
+// productId may be a raw ObjectId or an already-populated product object, depending on the caller
 const recalculateTotal = async (cart) => {
   let total = 0;
   for (const item of cart.products) {
-    const product = await Product.findById(item.productId);
+    const productId = item.productId?._id || item.productId;
+    const product = await Product.findById(productId);
     if (!product) continue;
     const unitPrice = product.discount > 0
       ? Math.round(product.price - (product.price * product.discount) / 100)
@@ -101,6 +103,17 @@ const getCart = asyncHandler(async (req, res) => {
   if (!cart) {
     cart = await Cart.create({ userId: req.user._id, products: [] });
   }
+
+  // if a product was deleted (e.g. by an admin) after being added to someone's cart,
+  // populate() returns null for it - strip those stale lines out instead of crashing the client
+  const validProducts = cart.products.filter((item) => item.productId !== null);
+  if (validProducts.length !== cart.products.length) {
+    cart.products = validProducts;
+    await recalculateTotal(cart);
+    await cart.save();
+    await cart.populate("products.productId", "name price imageUrl discount");
+  }
+
   return res.status(200).json(
     new apiresponse(200, cart, "cart fetched successfully")
   );
