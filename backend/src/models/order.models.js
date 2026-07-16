@@ -44,10 +44,17 @@ const orderSchema = new mongoose.Schema({
         enum:["PENDING","CANCELLED","DELIVERED"],
         default:"PENDING",
     },
-    razorpayOrderId:{
-        type:String,
-        required:true,
+    paymentMethod:{
+    type:String,
+    enum:["COD","ONLINE"],
+    required:true,
+},
+razorpayOrderId:{
+    type:String,
+    required:function(){
+        return this.paymentMethod === "ONLINE";
     },
+},
     razorpayPaymentId:{
         type:String,
     },

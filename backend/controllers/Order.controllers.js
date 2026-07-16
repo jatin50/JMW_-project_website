@@ -54,6 +54,33 @@ const restockOrderItems = async (order) => {
   );
 };
 
+// shared: decrements stock, creates the Order document, and empties the cart.
+// `extraFields` carries whatever differs between COD and ONLINE (paymentMethod,
+// razorpay ids, isPaid/paidAt).
+const commitCartToOrder = async ({ cart, address, userId, extraFields }) => {
+  await decrementCartStock(cart);
+
+  const order = await Order.create({
+    orderprice: cart.TotalPrice,
+    orderitems: cart.products.map((item) => ({
+      porductId: item.productId,
+      variantId: item.variantId,
+      color: item.color,
+      size: item.size,
+      quantity: item.quantity,
+    })),
+    userId,
+    address: address._id,
+    ...extraFields,
+  });
+
+  cart.products = [];
+  cart.TotalPrice = 0;
+  await cart.save();
+
+  return order;
+};
+
 // step 1: create a Razorpay order for the current cart total
 const createRazorpayOrder = asyncHandler(async (req, res) => {
   const { addressId } = req.body;
@@ -118,31 +145,56 @@ const verifyPaymentAndPlaceOrder = asyncHandler(async (req, res) => {
 
   // re-check stock right before committing - it may have changed since checkout started
   await assertCartStockAvailable(cart);
-  await decrementCartStock(cart);
 
-  const order = await Order.create({
-    orderprice: cart.TotalPrice,
-    orderitems: cart.products.map((item) => ({
-      porductId: item.productId,
-      variantId: item.variantId,
-      color: item.color,
-      size: item.size,
-      quantity: item.quantity,
-    })),
+  const order = await commitCartToOrder({
+    cart,
+    address,
     userId: req.user._id,
-    address: address._id,
-    razorpayOrderId: razorpay_order_id,
-    razorpayPaymentId: razorpay_payment_id,
-    isPaid: true,
-    paidAt: Date.now(),
+    extraFields: {
+      paymentMethod: "ONLINE",
+      razorpayOrderId: razorpay_order_id,
+      razorpayPaymentId: razorpay_payment_id,
+      isPaid: true,
+      paidAt: Date.now(),
+    },
   });
-
-  cart.products = [];
-  cart.TotalPrice = 0;
-  await cart.save();
 
   return res.status(201).json(
     new apiresponse(201, order, "Payment verified, order placed successfully")
+  );
+});
+
+// COD path: no Razorpay involved at all - just re-check stock and commit the order.
+// isPaid stays false (the customer pays the delivery agent, not us, not yet).
+const placeCODOrder = asyncHandler(async (req, res) => {
+  const { addressId } = req.body;
+  if (!addressId) {
+    throw new apierrors(400, "Address is required to place an order");
+  }
+
+  const address = await Address.findOne({ _id: addressId, userId: req.user._id });
+  if (!address) {
+    throw new apierrors(404, "Address not found");
+  }
+
+  const cart = await Cart.findOne({ userId: req.user._id });
+  if (!cart || cart.products.length === 0) {
+    throw new apierrors(400, "Cart is empty");
+  }
+
+  await assertCartStockAvailable(cart);
+
+  const order = await commitCartToOrder({
+    cart,
+    address,
+    userId: req.user._id,
+    extraFields: {
+      paymentMethod: "COD",
+    },
+  });
+
+  return res.status(201).json(
+    new apiresponse(201, order, "Order placed successfully (Cash on Delivery)")
   );
 });
 
@@ -190,4 +242,4 @@ const cancelOrder = asyncHandler(async (req, res) => {
   );
 });
 
-export { createRazorpayOrder, verifyPaymentAndPlaceOrder, getMyOrders, getOrderById, cancelOrder };
+export { createRazorpayOrder, verifyPaymentAndPlaceOrder, placeCODOrder, getMyOrders, getOrderById, cancelOrder };
