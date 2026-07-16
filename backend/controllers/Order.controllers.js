@@ -242,4 +242,56 @@ const cancelOrder = asyncHandler(async (req, res) => {
   );
 });
 
-export { createRazorpayOrder, verifyPaymentAndPlaceOrder, placeCODOrder, getMyOrders, getOrderById, cancelOrder };
+// admin: every order across every user, newest first
+const getAllOrders = asyncHandler(async (req, res) => {
+  const orders = await Order.find({})
+    .populate("userId", "name email phonenumber")
+    .populate("orderitems.porductId", "name price imageUrl")
+    .populate("address")
+    .sort({ createdAt: -1 });
+
+  return res.status(200).json(
+    new apiresponse(200, orders, "All orders fetched successfully")
+  );
+});
+
+// admin: move an order to PENDING / CANCELLED / DELIVERED.
+// - cancelling restocks the variants, same as a user-initiated cancel
+// - a cancelled order can't be reactivated (stock's already back in the pool,
+//   re-decrementing it here would need its own re-check-and-commit path)
+// - marking a COD order DELIVERED also flips isPaid, since cash changes hands at the door
+const updateOrderStatus = asyncHandler(async (req, res) => {
+  const { status } = req.body;
+  const allowedStatuses = ["PENDING", "CANCELLED", "DELIVERED"];
+  if (!allowedStatuses.includes(status)) {
+    throw new apierrors(400, "status must be one of PENDING, CANCELLED, DELIVERED");
+  }
+
+  const order = await Order.findById(req.params.orderId);
+  if (!order) {
+    throw new apierrors(404, "Order not found");
+  }
+
+  if (order.status === "CANCELLED" && status !== "CANCELLED") {
+    throw new apierrors(400, "Cannot reactivate a cancelled order");
+  }
+
+  if (status === "CANCELLED" && order.status !== "CANCELLED") {
+    await restockOrderItems(order);
+  }
+
+  order.status = status;
+
+  if (status === "DELIVERED" && order.paymentMethod === "COD" && !order.isPaid) {
+    order.isPaid = true;
+    order.paidAt = Date.now();
+  }
+
+  await order.save();
+
+  return res.status(200).json(
+    new apiresponse(200, order, "Order status updated successfully")
+  );
+});
+
+export { createRazorpayOrder, verifyPaymentAndPlaceOrder, placeCODOrder, getMyOrders, getOrderById, cancelOrder, getAllOrders, updateOrderStatus };

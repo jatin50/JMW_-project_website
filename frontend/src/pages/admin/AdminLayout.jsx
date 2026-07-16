@@ -4,6 +4,7 @@ const links = [
   { to: "/admin/products", label: "Products" },
   { to: "/admin/upload", label: "Upload product" },
   { to: "/admin/categories", label: "Categories" },
+  { to: "/admin/orders", label: "Orders" },
 ];
 
 const AdminLayout = () => {

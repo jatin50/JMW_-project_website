@@ -25,6 +25,7 @@ import AdminProducts from "./pages/admin/AdminProduct.jsx";
 import AdminUploadProduct from "./pages/admin/AdminUploadProduct.jsx";
 import AdminEditProduct from "./pages/admin/AdminEditProduct.jsx";
 import AdminCategories from "./pages/admin/AdminCategories.jsx";
+import AdminOrders from "./pages/admin/AdminOrders.jsx";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -44,6 +45,7 @@ const router = createBrowserRouter(
           <Route path="upload" element={<AdminUploadProduct />} />
           <Route path="edit/:productId" element={<AdminEditProduct />} />
           <Route path="categories" element={<AdminCategories />} />
+          <Route path="orders" element={<AdminOrders />} />
         </Route>
       </Route>
     </>
