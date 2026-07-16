@@ -24,10 +24,24 @@ const Payment = () => {
   const addressId = location.state?.addressId;
   const [status, setStatus] = useState("idle");
   const [error, setError] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("ONLINE");
 
   useEffect(() => {
     if (!addressId) navigate("/address");
   }, [addressId, navigate]);
+
+  const handlePlaceCODOrder = async () => {
+    setStatus("processing");
+    setError("");
+    try {
+      await api.post("/orders/place-cod", { addressId });
+      dispatch(clearCartState());
+      setStatus("success");
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to place order");
+      setStatus("error");
+    }
+  };
 
   const handlePay = async () => {
     setStatus("processing");
@@ -88,7 +102,11 @@ const Payment = () => {
     return (
       <div className="bg-ink text-paper min-h-screen flex flex-col items-center justify-center px-6 text-center">
         <h2 className="font-display text-3xl uppercase text-acid mb-3">Order placed!</h2>
-        <p className="text-paper/60 text-sm mb-8">Your payment was successful and your order is confirmed.</p>
+        <p className="text-paper/60 text-sm mb-8">
+          {paymentMethod === "COD"
+            ? "Your order is confirmed. Pay in cash when it arrives."
+            : "Your payment was successful and your order is confirmed."}
+        </p>
         <button
           onClick={() => navigate("/")}
           className="bg-paper text-ink font-bold px-6 py-3 rounded-full hover:bg-acid transition-colors"
@@ -113,17 +131,48 @@ const Payment = () => {
         <h2 className="font-display text-2xl uppercase mb-2">Order total</h2>
         <p className="font-mono text-3xl mb-6">₹{totalPrice}</p>
 
+        <div className="flex gap-3 mb-6">
+          <button
+            type="button"
+            onClick={() => setPaymentMethod("ONLINE")}
+            className={`flex-1 py-2.5 rounded-full text-xs font-bold tracking-wide border transition-colors ${
+              paymentMethod === "ONLINE"
+                ? "bg-paper text-ink border-paper"
+                : "border-[rgba(243,239,230,0.2)] text-paper/60 hover:border-paper"
+            }`}
+          >
+            PAY ONLINE
+          </button>
+          <button
+            type="button"
+            onClick={() => setPaymentMethod("COD")}
+            className={`flex-1 py-2.5 rounded-full text-xs font-bold tracking-wide border transition-colors ${
+              paymentMethod === "COD"
+                ? "bg-paper text-ink border-paper"
+                : "border-[rgba(243,239,230,0.2)] text-paper/60 hover:border-paper"
+            }`}
+          >
+            CASH ON DELIVERY
+          </button>
+        </div>
+
         {error && <p className="text-tangerine text-xs mb-4">{error}</p>}
 
         <button
-          onClick={handlePay}
+          onClick={paymentMethod === "COD" ? handlePlaceCODOrder : handlePay}
           disabled={status === "processing"}
           className="w-full bg-tangerine text-ink font-bold py-3 rounded-full hover:bg-acid transition-colors disabled:opacity-50"
         >
-          {status === "processing" ? "Opening checkout..." : "Pay now"}
+          {status === "processing"
+            ? paymentMethod === "COD" ? "Placing order..." : "Opening checkout..."
+            : paymentMethod === "COD" ? "Place order" : "Pay now"}
         </button>
 
-        <p className="text-[11px] text-paper/40 mt-4">Secured by Razorpay. Test mode — no real charges.</p>
+        <p className="text-[11px] text-paper/40 mt-4">
+          {paymentMethod === "COD"
+            ? "Pay in cash when your order arrives."
+            : "Secured by Razorpay. Test mode — no real charges."}
+        </p>
       </div>
     </div>
   );
