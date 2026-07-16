@@ -121,6 +121,7 @@ const getCart = asyncHandler(async (req, res) => {
 
 const decreaseQuantity = asyncHandler(async (req, res) => {
   const cart = await Cart.findOne({ userId: req.user._id });
+  console.log(cart)
   if (!cart) {
     throw new apierrors(404, "cart not found");
   }
