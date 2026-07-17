@@ -5,6 +5,7 @@ import { Provider, useDispatch, useSelector } from "react-redux";
 import { store } from "./store/store.js";
 import { fetchCurrentUser } from "./store/slices/userSlice.js";
 import { fetchCart, loadGuestCartFromStorage } from "./store/slices/cartSlice.js";
+import { fetchCategories } from "./store/slices/categorySlice.js";
 
 import {
   createBrowserRouter,
@@ -19,6 +20,9 @@ import Cart from "./components/Cart.jsx";
 import Address from "./components/Address.jsx";
 import Payment from "./components/Payment.jsx";
 import ProductReview from "./components/ProductReview.jsx";
+import RequireAuth from "./components/RequireAuth.jsx";
+import MyOrders from "./pages/MyOrders.jsx";
+import NotFound from "./pages/NotFound.jsx";
 import AdminRoute from "./components/AdminRoute.jsx";
 import AdminLayout from "./pages/admin/AdminLayout.jsx";
 import AdminProducts from "./pages/admin/AdminProduct.jsx";
@@ -36,6 +40,12 @@ const router = createBrowserRouter(
         <Route path="cart" element={<Cart />} />
         <Route path="address" element={<Address />} />
         <Route path="payment" element={<Payment />} />
+
+        <Route element={<RequireAuth />}>
+          <Route path="orders" element={<MyOrders />} />
+        </Route>
+
+        <Route path="*" element={<NotFound />} />
       </Route>
 
       <Route element={<AdminRoute />}>
@@ -58,6 +68,7 @@ function SessionBootstrap({ children }) {
 
   useEffect(() => {
     dispatch(fetchCurrentUser());
+    dispatch(fetchCategories());
   }, [dispatch]);
 
   useEffect(() => {

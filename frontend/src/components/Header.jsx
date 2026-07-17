@@ -1,21 +1,35 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { ShoppingCart, X } from "lucide-react";
+import { ShoppingCart, X, ChevronDown, Search, Menu } from "lucide-react";
 import { loginUser, registerUser, logoutUser } from "../store/slices/userSlice.js";
 import { mergeGuestCartIntoAccount } from "../store/slices/cartSlice.js";
 
-const navItems = ["Topwear", "Bottomwear", "Combos", "Winterwear", "New arrivals"];
-
 const Header = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { currentUser, isAuthenticated, status, error } = useSelector((state) => state.user);
   const { products } = useSelector((state) => state.cart);
+  const { items: categories } = useSelector((state) => state.categories);
   const cartCount = products.reduce((sum, item) => sum + item.quantity, 0);
 
   const [authOpen, setAuthOpen] = useState(false);
   const [mode, setMode] = useState("login");
   const [form, setForm] = useState({ name: "", email: "", password: "", phonenumber: "" });
+
+  const [shopMenuOpen, setShopMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    const trimmed = searchValue.trim();
+    navigate(trimmed ? `/?keyword=${encodeURIComponent(trimmed)}` : "/");
+    setSearchValue("");
+    setSearchOpen(false);
+    setMobileMenuOpen(false);
+  };
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -42,22 +56,83 @@ const Header = () => {
       </div>
 
       <nav className="sticky top-0 z-40 flex items-center justify-between px-6 md:px-10 py-4 bg-ink/80 backdrop-blur-md border-b border-[rgba(243,239,230,0.14)]">
-        <Link to="/" className="font-display text-lg tracking-wide text-paper">
-          JATIN MEN'S WEAR
-        </Link>
+        <div className="flex items-center gap-6">
+          <button
+            onClick={() => setMobileMenuOpen((v) => !v)}
+            className="md:hidden text-paper"
+            aria-label="Open menu"
+          >
+            <Menu size={22} />
+          </button>
+          <Link to="/" className="font-display text-lg tracking-wide text-paper">
+            JATIN MEN'S WEAR
+          </Link>
+        </div>
 
-        <ul className="hidden md:flex gap-8 text-paper">
-          {navItems.map((label) => (
-            <li key={label} className="text-xs tracking-wider text-paper/60">
-              {label.toUpperCase()}
-            </li>
-          ))}
+        <ul className="hidden md:flex items-center gap-8 text-paper">
+          <li
+            className="relative"
+            onMouseEnter={() => setShopMenuOpen(true)}
+            onMouseLeave={() => setShopMenuOpen(false)}
+          >
+            <button className="flex items-center gap-1 text-xs tracking-wider text-paper/60 hover:text-paper transition-colors">
+              SHOP <ChevronDown size={13} />
+            </button>
+            {shopMenuOpen && (
+              <div className="absolute top-full left-0 pt-3 w-48">
+                <div className="bg-[#1c1b22] border border-[rgba(243,239,230,0.14)] rounded-xl py-2 shadow-xl">
+                  <Link
+                    to="/"
+                    className="block px-4 py-2 text-xs text-paper/70 hover:text-tangerine hover:bg-ink transition-colors"
+                  >
+                    All products
+                  </Link>
+                  {categories.map((cat) => (
+                    <Link
+                      key={cat._id}
+                      to={`/?category=${cat._id}`}
+                      className="block px-4 py-2 text-xs text-paper/70 hover:text-tangerine hover:bg-ink transition-colors capitalize"
+                    >
+                      {cat.name}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+          </li>
+          <li>
+            <Link to="/?sort=newest" className="text-xs tracking-wider text-paper/60 hover:text-paper transition-colors">
+              NEW ARRIVALS
+            </Link>
+          </li>
         </ul>
 
         <div className="flex items-center gap-4">
+          <div className="hidden md:block relative">
+            {searchOpen ? (
+              <form onSubmit={handleSearchSubmit} className="flex items-center">
+                <input
+                  autoFocus
+                  value={searchValue}
+                  onChange={(e) => setSearchValue(e.target.value)}
+                  onBlur={() => !searchValue && setSearchOpen(false)}
+                  placeholder="Search products..."
+                  className="bg-[#1c1b22] border border-[rgba(243,239,230,0.2)] rounded-full text-xs px-4 py-2 w-48 outline-none focus:border-tangerine text-paper"
+                />
+              </form>
+            ) : (
+              <button onClick={() => setSearchOpen(true)} className="text-paper hover:text-tangerine transition-colors" aria-label="Search">
+                <Search size={19} />
+              </button>
+            )}
+          </div>
+
           {isAuthenticated ? (
             <div className="flex items-center gap-3 text-paper text-xs">
               <span className="hidden sm:inline">Hi, {currentUser?.name}</span>
+              <Link to="/orders" className="underline underline-offset-2 hover:text-tangerine">
+                My orders
+              </Link>
               <button onClick={() => dispatch(logoutUser())} className="underline underline-offset-2 hover:text-tangerine">
                 Logout
               </button>
@@ -81,6 +156,44 @@ const Header = () => {
           </Link>
         </div>
       </nav>
+
+      {mobileMenuOpen && (
+        <div className="md:hidden bg-ink border-b border-[rgba(243,239,230,0.14)] px-6 py-5 flex flex-col gap-4">
+          <form onSubmit={handleSearchSubmit}>
+            <input
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+              placeholder="Search products..."
+              className="w-full bg-[#1c1b22] border border-[rgba(243,239,230,0.2)] rounded-full text-sm px-4 py-2.5 outline-none focus:border-tangerine text-paper"
+            />
+          </form>
+
+          <Link
+            to="/"
+            onClick={() => setMobileMenuOpen(false)}
+            className="text-sm text-paper/80 tracking-wide"
+          >
+            All products
+          </Link>
+          {categories.map((cat) => (
+            <Link
+              key={cat._id}
+              to={`/?category=${cat._id}`}
+              onClick={() => setMobileMenuOpen(false)}
+              className="text-sm text-paper/80 tracking-wide capitalize"
+            >
+              {cat.name}
+            </Link>
+          ))}
+          <Link
+            to="/?sort=newest"
+            onClick={() => setMobileMenuOpen(false)}
+            className="text-sm text-paper/80 tracking-wide"
+          >
+            New arrivals
+          </Link>
+        </div>
+      )}
 
       {authOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
