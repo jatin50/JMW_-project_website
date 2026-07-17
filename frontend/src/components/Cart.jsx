@@ -18,7 +18,7 @@ const Cart = () => {
   const { products, totalPrice, status } = useSelector((state) => state.cart);
   const { isAuthenticated } = useSelector((state) => state.user);
   const [checkoutError, setCheckoutError] = useState("");
-
+// const productID = products.map((item) => item.productId._id);
   useEffect(() => {
     if (isAuthenticated) dispatch(fetchCart());
   }, [dispatch, isAuthenticated]);
@@ -80,6 +80,10 @@ const Cart = () => {
       ) : (
         <div className="grid md:grid-cols-3 gap-8">
           <div className="md:col-span-2 flex flex-col gap-4">
+            {/* <Link
+ to={`/product/${productID}`}
+//  className="group block bg-[#1c1b22] border border-[rgba(243,239,230,0.14)] rounded-2xl p-3.5 transition-transform duration-300 hover:-translate-y-2 hover:border-tangerine"
+></Link> */}
             {products.map((item) => (
               <div key={`${item.productId._id}-${item.variantId}`} className="flex gap-4 bg-[#1c1b22] border border-[rgba(243,239,230,0.14)] rounded-2xl p-4">
                 <img

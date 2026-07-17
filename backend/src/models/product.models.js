@@ -62,3 +62,8 @@ const productSchema = new mongoose.Schema(
 );
 
 export const Product = mongoose.model("Product", productSchema);
+
+// category filter (GET /products?category=...) and admin per-category listing
+productSchema.index({ category: 1 });
+// price sort / min-max filter (GET /products?sort=price&minPrice=&maxPrice=)
+productSchema.index({ price: 1 });
