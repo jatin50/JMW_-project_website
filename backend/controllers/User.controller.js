@@ -81,7 +81,8 @@ if(!user){
    }
    const option ={
     httpOnly: true,
-    secure :true
+    secure :true,
+    sameSite: "none" // frontend and backend live on different domains in production - without this the browser silently drops the cookie on cross-site requests
 
    }
    return res.status(200)
@@ -106,7 +107,8 @@ await User.findByIdAndUpdate(
 )
 const option ={
   httpOnly:true,
-  secure:true
+  secure:true,
+  sameSite: "none"
 }
 return res.status(200)
    .clearCookie("accesstoken",option)
@@ -130,7 +132,7 @@ return res.status(200)
       throw new apierrors(401,"Refresh token is expired or used")
     }
     const { AccessToken,RefreshToken } = await GenerateAccessAndRefreshToken(user._id)
-    const option = { httpOnly:true, secure:true }
+    const option = { httpOnly:true, secure:true, sameSite: "none" }
     return res.status(200)
       .cookie("accesstoken",AccessToken,option)
       .cookie("refreshtoken",RefreshToken,option)

@@ -6,7 +6,7 @@ dotenv.config({
 })
 ConnectionDB()
 .then(()=>{
-    const port = process.env.port||8000;
+    const port = process.env.Port||8000;
     app.get("/", (req, res) => {
         res.send('server is running');
     });
