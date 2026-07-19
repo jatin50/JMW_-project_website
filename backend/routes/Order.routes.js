@@ -3,6 +3,7 @@ import { createRazorpayOrder, verifyPaymentAndPlaceOrder, placeCODOrder, getMyOr
 import { VerifyJwt, isAdmin } from "../middleware/auth.middleware.js";
 
 const router = Router();
+console.log("Order routes loaded");
 router.use(VerifyJwt); // every order route requires login
 
 router.route("/").get(getMyOrders);
