@@ -1,0 +1,31 @@
+[
+  {
+    "name": "Oversized Acid Wash Tee",
+    "price": 899,
+    "description": "Heavyweight cotton tee with an acid-wash finish and dropped shoulders.",
+    "fabric": "100% Cotton",
+    "gsm": 240,
+    "discount": 10,
+    "category": "Topwear",
+    "image": "acid-wash-tee.jpg",
+    "variants": [
+      { "color": "black", "size": "M", "stock": 12 },
+      { "color": "black", "size": "L", "stock": 8 },
+      { "color": "tangerine", "size": "M", "stock": 5 }
+    ]
+  },
+  {
+    "name": "Cargo Track Pants",
+    "price": 1499,
+    "description": "Relaxed-fit cargo pants with tapered ankle cuffs.",
+    "fabric": "Cotton Twill",
+    "gsm": 280,
+    "discount": 0,
+    "category": "Bottomwear",
+    "image": "cargo-pants.jpg",
+    "variants": [
+      { "color": "olive", "size": "30", "stock": 6 },
+      { "color": "olive", "size": "32", "stock": 10 }
+    ]
+  }
+]

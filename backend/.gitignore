@@ -1,4 +1,3 @@
-
 ### Node ###
 # Logs
 logs
@@ -80,6 +79,11 @@ web_modules/
 .env.test.local
 .env.production.local
 .env.local
+
+# bulk product seed script - real photos/data, not meant for version control
+scripts/product-images/
+scripts/products.json
+scripts/.tmp-upload/
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
